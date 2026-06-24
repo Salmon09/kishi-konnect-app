@@ -523,6 +523,17 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
   padding: 5px 10px;
   white-space: nowrap;
 }
+.pipe-out  {
+  display: none;
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--leaf);
+  margin-top: 4px;
+  /* Add these 3 lines to prevent horizontal stretching: */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal; 
+}
 
 /* ═══════════════════════════════════════════════════════════
    SPINNER
