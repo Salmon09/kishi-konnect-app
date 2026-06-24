@@ -702,17 +702,30 @@ let lastTriageData=null, lastDiagData=null, activeCaseIdx=0;
 let recoveryChart=null, diagChart=null, triageStartTime=null;
 let chatHistory=[], deferredInstall=null;
 
-// ══ CLAUDE API ═════════════════════════════════
-async function callClaude(system,userMsg,imgB64=null,imgMime='image/jpeg'){
-  const content=[];
-  if(imgB64) content.push({type:'image',source:{type:'base64',media_type:imgMime,data:imgB64}});
-  content.push({type:'text',text:userMsg});
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,system,messages:[{role:'user',content}]})
+// ══ BACKEND API HELPER ═════════════════════════
+async function apiPost(endpoint, body) {
+  const res = await fetch('/api/' + endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
-  const data=await res.json();
-  return data.content?.map(b=>b.text||'').join('')||'';
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
+}
+
+// Legacy shim — kept for compatibility with any remaining callers
+async function callClaude(system, userMsg, imgB64=null, imgMime='image/jpeg'){
+  const data = await apiPost('chat', {
+    messages: [{ role: 'user', content: userMsg }],
+    llm: 'claude',
+    _system_override: system,
+    _img_b64: imgB64,
+    _img_mime: imgMime
+  });
+  return data.response || '';
 }
 
 // ══ AUTH GATE (MANDATORY) ══════════════════════
@@ -943,13 +956,6 @@ async function runTriage(){
   const symptoms=document.getElementById('f-symptoms').value.trim();
   if(!crop||!stage||!region||!symptoms){showToast('Please fill all fields first.');return;}
 
-  const sym=symptoms.toLowerCase();
-  let d=0.05,k=0.20,code='BIOT-STRESS-GEN',sev='LOW',pathName='Nutritional/Abiotic Stress';
-  if(sym.includes('blight')||sym.includes('spot')||sym.includes('brown')||sym.includes('ring')){d=0.12;k=0.28;code='PATH-ALT-BLIGHT';sev='HIGH';pathName='Early Blight (Alternaria solani)';}
-  else if(sym.includes('mildew')||sym.includes('powder')||sym.includes('white')){d=0.08;k=0.32;code='PATH-MILDEW-COAT';sev='MEDIUM';pathName='Powdery Mildew (Leveillula taurica)';}
-  else if(sym.includes('rust')||sym.includes('orange')||sym.includes('pustule')){d=0.10;k=0.25;code='PATH-RUST-PST';sev='HIGH';pathName='Stripe Rust (Puccinia striiformis)';}
-  else if(sym.includes('wilt')||sym.includes('droop')||sym.includes('collapse')){d=0.15;k=0.18;code='PATH-BACT-WILT';sev='HIGH';pathName='Bacterial Wilt (Ralstonia solanacearum)';}
-
   const btn=document.getElementById('triage-btn');
   btn.disabled=true;
   document.getElementById('triage-btn-inner').innerHTML='<div class="spinner"></div> Analyzing...';
@@ -957,51 +963,34 @@ async function runTriage(){
   document.getElementById('report-actions').style.display='none';
   triageStartTime=Date.now();
 
-  // FARMER REPORT SYSTEM PROMPT — plain, readable, covers weather/season/3 months
-  const sys=`You are KrishiAI, a senior agricultural advisor writing a farm advisory report for an Indian farmer. 
+  let d=0.05,k=0.20,code='BIOT-STRESS-GEN',sev='LOW',pathName='Abiotic/Nutritional Stress';
 
-Write in plain, simple, readable English that any farmer can understand. No technical jargon. No bullet points. No asterisks. No markdown symbols.
-
-Structure your report with these exact section headings (write them in CAPITALS followed by a colon):
-
-WHAT WE FOUND: Explain in 2-3 simple sentences what disease or problem has been identified and how serious it is.
-
-CURRENT WEATHER AND SEASON: Describe the current season and weather conditions typical for this region, and explain how they are affecting this disease or crop problem right now.
-
-WHAT YOU MUST DO TODAY: Give 3 to 4 simple, direct actions the farmer must take within the next 24 to 48 hours.
-
-SPRAY RECOMMENDATION: Name the exact chemical spray product, tell the farmer how much to mix per liter of water, when to spray, and what safety precautions to follow.
-
-NATURAL OPTION: Describe one organic or natural alternative the farmer can use alongside or instead of chemicals.
-
-3 MONTH OUTLOOK: Write a month by month forecast for the next 3 months. Tell the farmer what to watch for each month, what actions to take, and what to expect from their crop if they follow the treatment.
-
-Write warmly and practically. The farmer is depending on this advice to save their crop.`;
-
-  const userMsg=`Crop: ${crop}\nGrowth Stage: ${stage}\nRegion: ${region}\nCurrent Month: ${new Date().toLocaleString('default',{month:'long'})}\nSymptoms: ${symptoms}\nDiagnostic Code: ${code}\nPathogen: ${pathName}\nSeverity: ${sev}`;
-
-  let aiText;
-  try{ aiText=await callClaude(sys,userMsg); }
-  catch(e){
-    aiText=`WHAT WE FOUND: Your ${crop} crop shows signs of ${pathName}. This is a ${sev.toLowerCase()} risk condition that needs your attention right away.
-
-CURRENT WEATHER AND SEASON: ${region} is currently in a season that creates warm and humid conditions. These conditions are ideal for the spread of this disease, especially during night hours when temperature drops and dew forms on leaves.
-
-WHAT YOU MUST DO TODAY: Remove and collect all infected leaves and stems from the field. Do not leave them on the ground. Burn or bury them far from the crop. Avoid watering the crop in the evening or at night. Ensure there is enough space between plants for air to flow through.
-
-SPRAY RECOMMENDATION: Mix Mancozeb 75 WP at 2 grams per liter of water. Spray on all leaves, top and bottom, early in the morning. Repeat after 7 days. Do this for 3 rounds total. Do not spray within 14 days of harvest. Wear gloves and a face mask while spraying. Keep children and animals away from the sprayed area.
-
-NATURAL OPTION: Dissolve 10 ml of neem oil in 1 liter of water with a few drops of liquid soap. Spray this solution on the crop every 5 days. This helps slow down the disease without harmful chemicals.
-
-3 MONTH OUTLOOK: Month 1 - Apply the spray treatment and monitor the crop every 2 days. You should see the disease stop spreading within 10 days. New leaves should look healthy. Month 2 - Continue monitoring. If the crop is in flowering stage, stop chemical sprays and switch to the neem oil option. Watch for new outbreaks especially after rain. Month 3 - If you have followed the treatment, your crop should have mostly recovered. Focus on good nutrition with balanced fertilizer to help the crop produce well. Start planning which resistant variety to plant in the next season.`;
+  let aiText,curves;
+  try{
+    const result=await apiPost('triage',{crop_type:crop,crop_stage:stage,region,symptoms,area_acres:1});
+    aiText=result.ai_triage;
+    d=result.decay_rate; k=result.recovery_k;
+    code=result.diagnostic_code; sev=result.severity;
+    pathName=result.diagnostic_code; // will be overridden by display
+    curves={decay:result.decay_curve,recovery:result.recovery_curve};
+  }catch(e){
+    console.error('Triage API error:',e);
+    // Fallback local logic
+    const sym=symptoms.toLowerCase();
+    if(sym.includes('blight')||sym.includes('spot')||sym.includes('brown')||sym.includes('ring')){d=0.12;k=0.28;code='PATH-ALT-BLIGHT';sev='HIGH';pathName='Early Blight (Alternaria solani)';}
+    else if(sym.includes('mildew')||sym.includes('powder')||sym.includes('white')){d=0.08;k=0.32;code='PATH-MILDEW-COAT';sev='MEDIUM';pathName='Powdery Mildew';}
+    else if(sym.includes('rust')||sym.includes('orange')||sym.includes('pustule')){d=0.10;k=0.25;code='PATH-RUST-PST';sev='HIGH';pathName='Stripe Rust';}
+    else if(sym.includes('wilt')||sym.includes('droop')||sym.includes('collapse')){d=0.15;k=0.18;code='PATH-BACT-WILT';sev='HIGH';pathName='Bacterial Wilt';}
+    curves=computeCurves(0.75,d,k);
+    aiText=`WHAT WE FOUND: Your ${crop} crop shows signs of ${pathName}. This is a ${sev.toLowerCase()} risk condition that needs your attention right away.\n\nCURRENT WEATHER AND SEASON: ${region} conditions are currently favouring disease spread. Act promptly.\n\nWHAT YOU MUST DO TODAY: Remove infected leaves and destroy them. Avoid evening watering. Improve air circulation between plants.\n\nSPRAY RECOMMENDATION: Mancozeb 75 WP at 2g per liter of water. Spray all leaf surfaces every 7 days for 3 cycles. Wear gloves and mask.\n\nNATURAL OPTION: Neem oil 10ml per liter with a drop of soap, spray every 5 days as a safe alternative.\n\n3 MONTH OUTLOOK: Month 1 — Apply treatment and monitor every 2 days. Month 2 — Continue monitoring, switch to neem during flowering. Month 3 — Crop should recover if treated promptly.`;
   }
 
   // Render as plain report sections
-  const sections=aiText.split(/\n(?=[A-Z\s]+:)/g).filter(s=>s.trim());
+  const sections=aiText.split(/\n(?=[A-Z][A-Z\s]+:)/g).filter(s=>s.trim());
   let html='';
   sections.forEach(sec=>{
     const colonIdx=sec.indexOf(':');
-    if(colonIdx>-1&&colonIdx<50){
+    if(colonIdx>-1&&colonIdx<60){
       const heading=sec.substring(0,colonIdx).trim();
       const body=sec.substring(colonIdx+1).trim();
       html+=`<div class="rp-section"><div class="rp-heading">${heading}</div><div class="rp-text">${body}</div></div>`;
@@ -1012,8 +1001,8 @@ NATURAL OPTION: Dissolve 10 ml of neem oil in 1 liter of water with a few drops 
   document.getElementById('triage-result').className='report-plain';
   document.getElementById('triage-result').innerHTML=html||`<div class="rp-section"><div class="rp-text">${aiText}</div></div>`;
 
-  const curves=computeCurves(0.75,d,k);
-  lastTriageData={crop,stage,region,symptoms,code,sev,pathName,aiText,curves,d,k,logs};
+  if(!curves) curves=computeCurves(0.75,d,k);
+  lastTriageData={crop,stage,region,symptoms,code,sev,pathName,aiText,curves,d,k};
 
   document.getElementById('diag-badge-area').style.display='block';
   document.getElementById('diag-badge').innerHTML=
@@ -1184,8 +1173,8 @@ async function runImageAnalysis(dataUrl){
   const b64=dataUrl.split(',')[1];
   const mime=dataUrl.match(/data:(image\/\w+);/)?.[1]||'image/jpeg';
   try{
-    const text=await callClaude(`You are a plant pathology VLM. Analyze the crop image: leaf/plant condition, disease symptoms or lesions, estimated affected area, initial pathogen hypothesis. Plain text, 70 words, no symbols.`,'Analyze this crop photograph for disease symptoms.',b64,mime);
-    document.getElementById('img-scan-text').innerHTML=`<pre>${text}</pre>`;
+    const result=await apiPost('image-analyze',{image_base64:b64,image_mime:mime});
+    document.getElementById('img-scan-text').innerHTML=`<pre>${result.analysis}</pre>`;
   }catch(e){document.getElementById('img-scan-text').innerHTML=`<pre>Image registered. Please describe symptoms in the form below.</pre>`;}
 }
 
@@ -1234,36 +1223,60 @@ async function runDeepDiagnosis(){
   document.getElementById('diag-output').style.display='none';
   resetPipeline();
 
-  const sym=symptoms.toLowerCase();
-  let d=0.08,k=0.25,chemRx,bioRx,pathogen='General Stress',severity='MEDIUM',ipmNotes=[];
-  if(sym.includes('blight')||sym.includes('ring')||sym.includes('brown')){d=0.12;k=0.28;pathogen='Alternaria solani';severity='HIGH';chemRx='Mancozeb 75 WP at 2g per liter. Spray every 7 days for 3 cycles. PHI: 14 days.';bioRx='Trichoderma viride compost at 100g per plant. Pseudomonas fluorescens at 10ml per liter every 10 days.';ipmNotes=['Remove infected lower leaves immediately','Switch to drip irrigation','Maintain row spacing for airflow','Use resistant variety next season'];}
-  else if(sym.includes('pustule')||sym.includes('rust')||sym.includes('orange')){d=0.10;k=0.30;pathogen='Puccinia striiformis';severity='HIGH';chemRx='Propiconazole 25 EC at 1ml per liter. Apply at first appearance. PHI: 21 days.';bioRx='Crop rotation with non-host legumes. 5% NSKE spray every 10 days.';ipmNotes=['Use DBW-222 or HD-3086 resistant wheat varieties','Timely sowing to avoid rust season','Balanced NPK — avoid excess nitrogen'];}
-  else if(sym.includes('blast')||sym.includes('spindle')||sym.includes('grey')){d=0.09;k=0.22;pathogen='Magnaporthe oryzae';severity='HIGH';chemRx='Tricyclazole 75 WP at 0.6g per liter. Apply at tillering and panicle initiation.';bioRx='Pseudomonas fluorescens at 10ml per liter at 10-day intervals.';ipmNotes=['Use MTU 1010 or Swarna Sub1 blast-resistant rice','Avoid excess nitrogen above 60kg per hectare'];}
-  else if(sym.includes('powder')||sym.includes('white')){d=0.07;k=0.35;pathogen='Leveillula taurica';severity='MEDIUM';chemRx='Water-soluble Sulphur 80 WP at 2.5g per liter. Repeat after 12 days.';bioRx='Ampelomyces quisqualis spore suspension at 5ml per liter.';ipmNotes=['Prune overcrowded canopy','Avoid excess nitrogen','Remove infected leaves and burn'];}
-  else if(sym.includes('wilt')||sym.includes('water')){d=0.14;k=0.16;pathogen='Ralstonia solanacearum';severity='CRITICAL';chemRx='Copper oxychloride 50 WP at 3g per liter soil drench. Streptomycin at 0.3g per liter.';bioRx='Trichoderma harzianum drench at 10g per liter. Remove wilted plants immediately.';ipmNotes=['Remove and destroy wilted plants with roots','Do not replant solanaceous crops for 3 years','Use grafted seedlings on resistant rootstocks'];}
-  else{d=0.05;k=0.20;pathogen='Abiotic Stress';severity='LOW';chemRx='Copper oxychloride 50 WP at 3g per liter prophylactic spray.';bioRx='Bacillus subtilis at 5ml per liter weekly. Soil test for nutrient deficiency.';ipmNotes=['Conduct soil and water testing','Check irrigation schedule','Apply balanced NPK'];}
+  // Optimistic pipe animation while API call runs
+  for(let i=0;i<PIPE_CFG.length;i++) runPipeStep(i,'Running...',480+i*75);
 
-  const pipeOuts=[`Match: ${pathogen}. High confidence.`,`Region params loaded. Seasonal risk: ${severity}.`,`${chemRx.substring(0,48)}...`,`d=${d}, k=${k}. Peak recovery Day 12.`,`Hotspot patches: 28, 36.`,`Confidence: ${(0.80+Math.random()*0.17).toFixed(3)}.`];
-  for(let i=0;i<PIPE_CFG.length;i++) await runPipeStep(i,pipeOuts[i],480+i*75);
+  let d=0.08,k=0.25,chemRx,bioRx,pathogen,severity,ipmNotes=[],aiAnalysis,farmerAdv,agronNotes,curves;
 
-  const sys=`You are a senior plant pathologist. Write a detailed clinical diagnosis in plain professional text. No bullets, no symbols.
-Sections: PATHOGEN IDENTIFICATION AND CLASS, DISEASE MECHANISM AND SPREAD, CURRENT INFECTION STAGE, IPM STRATEGY, LONG-TERM RECOVERY. About 200 words.`;
-
-  let aiAnalysis,farmerAdv,agronNotes;
   try{
-    [aiAnalysis,farmerAdv,agronNotes]=await Promise.all([
-      callClaude(sys,`Crop: ${crop} (${stage}) | Region: ${region} | ${area} acres\nSymptoms: ${symptoms}`),
-      callClaude(`Write a simple plain text advisory for a farmer about ${pathogen} on ${crop}. No bullets. 80 words. Simple language.`,`Symptoms: ${symptoms}`),
-      callClaude(`Write technical notes for an agronomist about ${pathogen} on ${crop}. Include PHI, resistance risk, MRL compliance. 100 words.`,`Region: ${region}`)
-    ]);
+    const imgEl=document.getElementById('upload-preview');
+    let imgB64=null,imgMime='image/jpeg';
+    if(imgEl.src&&imgEl.src.startsWith('data:')){
+      const parts=imgEl.src.split(',');
+      imgB64=parts[1];
+      imgMime=imgEl.src.match(/data:(image\/\w+);/)?.[1]||'image/jpeg';
+    }
+
+    const result=await apiPost('diagnose',{
+      crop_type:crop,crop_stage:stage,region,symptoms,
+      area_acres:parseFloat(area)||1,
+      image_base64:imgB64,image_mime:imgMime
+    });
+
+    d=result.decay_rate; k=result.recovery_k;
+    chemRx=result.chemical_rx; bioRx=result.bio_rx;
+    pathogen=result.pathogen; severity=result.severity;
+    ipmNotes=result.ipm_notes||[];
+    aiAnalysis=result.ai_analysis;
+    farmerAdv=result.farmer_advisory;
+    agronNotes=result.agronomist_notes;
+    curves={decay:result.decay_vector,recovery:result.recovery_vector};
+
+    // Update pipe steps with real agent traces
+    if(result.agent_traces){
+      result.agent_traces.forEach((trace,i)=>{
+        const outEl=document.getElementById('po-'+i);
+        const dotEl=document.getElementById('pd-'+i);
+        if(outEl){outEl.textContent=trace.replace(/\[.*?\]\s*/,'');outEl.style.display='block';}
+        if(dotEl){dotEl.className='pipe-dot done';dotEl.textContent='✓';}
+      });
+    }
+
   }catch(e){
-    aiAnalysis=`Pathogen identified as ${pathogen} based on described symptom morphology. The disease mechanism involves penetration of host leaf cuticle followed by intercellular growth causing necrotic lesion formation. Current infection stage indicates early to mid-stage progression with potential for rapid spread under humid conditions. Integrated management must begin immediately with chemical intervention and biological amendments. Long-term management must incorporate resistant crop varieties and 3-season crop rotation with non-host species.`;
-    farmerAdv=`Your ${crop} has a disease called ${pathogen}. It is a ${severity.toLowerCase()} risk problem. Remove all infected plant parts and burn them. Spray the chemical prescription as directed. Do not water the leaves at night. With proper treatment your crop can recover.`;
-    agronNotes=`Pathogen: ${pathogen}. PHI: as per label. Resistance risk: low to moderate for single-site fungicides. Rotate chemical groups. MRL compliance required as per FSSAI regulations.`;
+    console.error('Diagnose API error:',e);
+    const sym=symptoms.toLowerCase();
+    if(sym.includes('blight')||sym.includes('ring')||sym.includes('brown')){d=0.12;k=0.28;pathogen='Alternaria solani';severity='HIGH';chemRx='Mancozeb 75 WP at 2g per liter. Spray every 7 days for 3 cycles. PHI: 14 days.';bioRx='Trichoderma viride compost at 100g per plant. Pseudomonas fluorescens at 10ml per liter.';ipmNotes=['Remove infected lower leaves immediately','Switch to drip irrigation','Use resistant variety next season'];}
+    else if(sym.includes('pustule')||sym.includes('rust')||sym.includes('orange')){d=0.10;k=0.30;pathogen='Puccinia striiformis';severity='HIGH';chemRx='Propiconazole 25 EC at 1ml per liter. PHI: 21 days.';bioRx='5% NSKE spray every 10 days.';ipmNotes=['Use DBW-222 or HD-3086 wheat varieties','Timely sowing','Balanced NPK'];}
+    else if(sym.includes('blast')||sym.includes('spindle')){d=0.09;k=0.22;pathogen='Magnaporthe oryzae';severity='HIGH';chemRx='Tricyclazole 75 WP at 0.6g per liter.';bioRx='Pseudomonas fluorescens at 10ml per liter.';ipmNotes=['Use MTU 1010 blast-resistant rice','Avoid excess nitrogen'];}
+    else{d=0.05;k=0.20;pathogen='Abiotic Stress';severity='LOW';chemRx='Conduct soil test first.';bioRx='Bacillus subtilis at 5ml per liter.';ipmNotes=['Soil and water testing','Check irrigation','Apply balanced NPK'];}
+    aiAnalysis=`Pathogen identified as ${pathogen} based on symptom morphology. Immediate intervention recommended. AI service temporarily unavailable — using local knowledge base.`;
+    farmerAdv=`Your ${crop} has ${pathogen}. Remove infected parts and spray as directed. With prompt treatment your crop can recover.`;
+    agronNotes=`Pathogen: ${pathogen}. PHI as per label. Resistance risk: low to moderate. MRL compliance required per FSSAI.`;
+    curves=computeCurves(0.75,d,k);
   }
 
+  if(!curves)curves=computeCurves(0.75,d,k);
   const conf=0.80+Math.random()*0.17;
-  const curves=computeCurves(0.75,d,k);
   lastDiagData={crop,stage,region,area,pathogen,confidence:conf,severity,chemRx,bioRx,aiAnalysis,farmerAdv,agronNotes,ipmNotes,curves,d,k};
 
   document.getElementById('m-pathogen').textContent=pathogen;
@@ -1341,11 +1354,13 @@ async function sendChat(){
   chatHistory.push({role:'user',content:msg});
   const tid='t'+Date.now(); addMsg('ai','Thinking...', tid);
   try{
-    const context=chatHistory.slice(-6).map(m=>`${m.role}: ${m.content}`).join('\n\n');
-    const text=await callClaude(CHAT_SYSTEM,context);
-    chatHistory.push({role:'assistant',content:text});
+    const data=await apiPost('chat',{
+      messages:chatHistory.slice(-8),
+      llm:activeLLM
+    });
+    chatHistory.push({role:'assistant',content:data.response});
     document.getElementById(tid)?.remove();
-    addMsg('ai',text);
+    addMsg('ai',data.response);
   }catch(e){
     document.getElementById(tid)?.remove();
     addMsg('ai','Network error. Please check your connection and try again.');
