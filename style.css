@@ -445,7 +445,6 @@ textarea { resize: vertical; min-height: 72px; }
 select option { background: #fff; color: var(--ink); }
 input::placeholder, textarea::placeholder { color: #889977; }
 
-/* The new 'Others' text input class */
 .other-input {
   display: none;
   margin-top: 5px;
@@ -621,7 +620,7 @@ input::placeholder, textarea::placeholder { color: #889977; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   AGRONOMIST — COL LAYOUTS
+   AGRONOMIST — COL LAYOUTS & STANDARDIZATION
    ═══════════════════════════════════════════════════════════ */
 .col-4-8 {
   display: grid;
@@ -668,7 +667,7 @@ input::placeholder, textarea::placeholder { color: #889977; }
 .case-farmer { font-size: 11px; color: var(--dim); font-weight: 600;}
 
 /* ═══════════════════════════════════════════════════════════
-   IMAGE UPLOAD ZONE
+   IMAGE UPLOAD ZONE (Locked Premium Size Constraints)
    ═══════════════════════════════════════════════════════════ */
 .upload-zone {
   border: 2px dashed var(--border);
@@ -697,17 +696,32 @@ input::placeholder, textarea::placeholder { color: #889977; }
 .upload-text { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
 .upload-hint { font-size: 11px; color: var(--dim); }
 
+/* Strict Standard Layout Dimension Frame Core */
+#upload-preview-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  background: #f7faf4;
+}
 .scan-wrapper {
   position: relative;
   overflow: hidden;
-  max-width: 100%;
+  width: 100%;
+  max-width: 480px;
+  height: 320px;
+  margin: 0 auto;
+  background: #f7faf4;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .upload-preview {
   width: 100%;
-  max-width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
   object-fit: contain;
+  display: block;
 }
 
 /* Scan line animation */
@@ -716,7 +730,7 @@ input::placeholder, textarea::placeholder { color: #889977; }
   left: 0; right: 0;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--leaf), transparent);
-  animation: scan 2s linear;
+  animation: scan 2s linear infinite;
   top: 0;
 }
 @keyframes scan { from { top: 0%; } to { top: 100%; } }
@@ -898,72 +912,90 @@ input::placeholder, textarea::placeholder { color: #889977; }
 .prog-fill { height: 100%; background: linear-gradient(90deg, var(--forest), var(--leaf)); border-radius: 3px; }
 
 /* ═══════════════════════════════════════════════════════════
-   AI ADVISOR / CHAT (Light Theme)
+   AI ADVISOR / CHAT (Highly Redesigned Premium Console)
    ═══════════════════════════════════════════════════════════ */
 #chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  min-height: 300px;
-  max-height: 420px;
+  padding: 20px;
+  min-height: 380px;
+  max-height: 460px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: #fafcf8;
+  gap: 14px;
+  background: #fafdf6;
+  border-bottom: 1px solid var(--border2);
 }
-.msg { display: flex; flex-direction: column; }
+.msg { display: flex; flex-direction: column; width: 100%; animation: gate-in 0.2s ease-out; }
 .msg.user { align-items: flex-end; }
 .msg.ai   { align-items: flex-start; }
+
 .bubble {
-  max-width: 85%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 13px;
+  max-width: 82%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 13.5px;
   line-height: 1.65;
-  box-shadow: 0 1px 3px rgba(40,80,10,.05);
+  box-shadow: 0 2px 6px rgba(40,80,10,.04);
 }
-.msg.user .bubble { background: var(--forest); color: #fff; border-radius: 12px 12px 2px 12px; }
-.msg.ai   .bubble { background: #fff; border: 1px solid var(--border); color: var(--ink); border-radius: 12px 12px 12px 2px; }
-.msg-time { font-size: 10px; color: var(--dim); font-family: var(--mono); margin-top: 4px; }
+.msg.user .bubble {
+  background: linear-gradient(135deg, var(--forest), var(--leaf));
+  color: #ffffff;
+  border-bottom-right-radius: 2px;
+}
+.msg.ai .bubble {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--ink);
+  border-bottom-left-radius: 2px;
+}
+.msg-time { font-size: 10px; color: var(--dim); font-family: var(--mono); margin-top: 4px; padding: 0 4px; }
 
 .llm-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 10px 16px;
   border-top: 1px solid var(--border2);
   border-bottom: 1px solid var(--border2);
   flex-wrap: wrap;
-  background: var(--surface);
+  background: var(--mist);
 }
-.llm-label { font-size: 11px; color: var(--dim); font-weight: 600; }
+.llm-label { font-size: 11px; color: var(--dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .llm-chip {
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--dim);
   cursor: pointer;
-  transition: .12s;
+  transition: all 0.2s ease;
 }
-.llm-chip.active { background: var(--forest); color: #fff; border-color: var(--forest); }
+.llm-chip:hover { border-color: var(--leaf); color: var(--forest); }
+.llm-chip.active { background: var(--forest); color: #fff; border-color: var(--forest); box-shadow: 0 2px 4px rgba(40,80,10,0.15); }
 
 .chat-input-row {
   display: flex;
-  gap: 8px;
-  padding: 12px 14px;
-  border-top: 1px solid var(--border2);
-  background: #fff;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-radius: 0 0 var(--r) var(--r);
 }
 .chat-input-row input {
   flex: 1;
   margin: 0;
   background: #f4f8f0;
+  border: 1px solid var(--border);
+  padding: 11px 16px;
+  border-radius: 24px;
+}
+.chat-input-row input:focus {
+  background: #ffffff;
 }
 
-/* Knowledge topics */
+/* Knowledge topics layout adjustments */
 .kb-topic-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -987,7 +1019,7 @@ input::placeholder, textarea::placeholder { color: #889977; }
 .kb-topic-icon { font-size: 15px; }
 
 /* ═══════════════════════════════════════════════════════════
-   PDF REPORT (print target)
+   PDF REPORT (Global Custom Print Adjustments)
    ═══════════════════════════════════════════════════════════ */
 #pdf-report { display: none; }
 
@@ -1021,30 +1053,30 @@ input::placeholder, textarea::placeholder { color: #889977; }
 .pdf-disclaimer { font-size: 10px; color: #999; margin-top: 8px; font-style: italic; }
 
 /* ═══════════════════════════════════════════════════════════
-   PWA INSTALL BANNER
+   GLOBAL PRINT HOOK OVERRIDES
    ═══════════════════════════════════════════════════════════ */
-#install-banner {
-  display: none;
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 18px;
-  display: none;
-  align-items: center;
-  gap: 14px;
-  z-index: 800;
-  box-shadow: var(--shadow);
-  max-width: 90vw;
+@media print {
+  body * { visibility: hidden !important; }
+  #pdf-report, #pdf-report * { visibility: visible !important; }
+  #pdf-report { display: block !important; position: fixed !important; inset: 0 !important; background: white !important; z-index: 99999 !important; padding: 36px 48px !important; overflow: auto !important; }
+  @page { margin: 0; size: A4 portrait; }
+  .scan-wrapper {
+    width: 400px !important;
+    height: 280px !important;
+    page-break-inside: avoid;
+  }
+  .upload-preview {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
 }
-#install-banner.visible { display: flex; }
-.install-icon { font-size: 28px; }
-.install-title { font-size: 14px; font-weight: 700; color: var(--ink); }
-.install-sub   { font-size: 11px; color: var(--dim); }
-.install-actions { display: flex; gap: 8px; }
+
+/* Global overflow guard — prevents any child from widening the viewport */
+.panel, .card, .upload-zone, .scan-wrapper, .upload-preview, #drop-zone {
+  max-width: 100%;
+  box-sizing: border-box;
+}
 
 /* ═══════════════════════════════════════════════════════════
    RESPONSIVE

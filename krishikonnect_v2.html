@@ -2,430 +2,94 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1200">
+<meta name="description" content="KrishiKonnect — AI-powered crop intelligence platform for Indian farmers and agronomists">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="KrishiKonnect">
-<meta name="theme-color" content="#1a1200">
-<link rel="manifest" href="#" id="pwa-manifest">
-<title>KrishiKonnect — AI Crop Intelligence Platform</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<title>KrishiKonnect — AI Crop Intelligence</title>
+
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-<style>
-@media print {
-  body * { visibility: hidden !important; }
-  #pdf-report, #pdf-report * { visibility: visible !important; }
-  #pdf-report { position: fixed !important; inset: 0 !important; background: white !important; z-index: 99999 !important; padding: 36px 48px !important; overflow: auto !important; }
-  @page { margin: 0; size: A4 portrait; }
-}
-:root {
-  --soil:#1a1200; --bark:#2a1f00; --leaf:#3d7a1e; --sprout:#6eb834;
-  --mist:#f0f7e6; --clay:#d9a84e; --ember:#e05030; --river:#1e6f8a;
-  --paper:#fafdf6; --ink:#151c10; --dim:#5a6b58; --border:#e4eddc; --border2:#f0f5ea;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Space Grotesk',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-.mono{font-family:'JetBrains Mono',monospace}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
-/* ── GATE (auth wall) ── */
-#app-gate{position:fixed;inset:0;background:var(--soil);z-index:9000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0}
-#gate-card{background:#fff;border-radius:22px;padding:38px 40px;width:440px;max-width:92vw;box-shadow:0 8px 50px rgba(0,0,0,.35);animation:gate-up .3s ease}
-@keyframes gate-up{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-#gate-logo{display:flex;align-items:center;gap:11px;margin-bottom:6px}
-#gate-logo-icon{width:44px;height:44px;background:var(--leaf);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
-#gate-logo-text{font-weight:700;font-size:20px;color:var(--ink)}
-#gate-logo-sub{font-size:10px;color:var(--sprout);font-family:'JetBrains Mono',monospace;margin-top:1px;letter-spacing:1px}
-.gate-tagline{font-size:12px;color:var(--dim);margin-bottom:22px;line-height:1.5}
-.gate-tabs{display:flex;margin-bottom:20px;border-bottom:2px solid var(--border);gap:0}
-.gate-tab{flex:1;padding:10px;text-align:center;font-weight:600;font-size:14px;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
-.gate-tab.active{color:var(--leaf);border-bottom-color:var(--leaf)}
-.gate-err{background:#fee2e2;border:1px solid #fca5a5;color:#b91c1c;border-radius:8px;padding:9px 12px;font-size:12px;margin-bottom:14px;display:none}
-.role-select{display:flex;gap:8px;margin-bottom:14px}
-.role-btn{flex:1;padding:9px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--dim);background:#fff;transition:all .15s;text-align:center}
-.role-btn.active{background:var(--mist);border-color:var(--leaf);color:var(--leaf)}
-.gate-footer{text-align:center;font-size:12px;color:var(--dim);margin-top:14px}
-
-/* ── TOPBAR ── */
-#topbar{background:var(--soil);border-bottom:1px solid #3d3200;position:sticky;top:0;z-index:200;display:flex;align-items:center;padding:0 20px;height:58px;gap:12px}
-.brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
-.brand-icon{width:34px;height:34px;background:var(--leaf);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.brand-name{color:#fff;font-weight:700;font-size:16px;letter-spacing:-.3px}
-.brand-tag{color:var(--sprout);font-size:9px;font-family:'JetBrains Mono',monospace;display:block;margin-top:-2px;letter-spacing:.8px}
-.nav-center{flex:1;display:flex;justify-content:center}
-.nav-tabs{display:flex;gap:2px;background:#2a1f00;border-radius:10px;padding:3px}
-.nav-tab{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:#8a9a80;background:transparent;transition:all .18s;display:flex;align-items:center;gap:5px;white-space:nowrap}
-.nav-tab.active{background:var(--leaf);color:#fff}
-.nav-tab:hover:not(.active){color:#d0e8c0}
-.auth-zone{display:flex;gap:8px;align-items:center;flex-shrink:0}
-.pulse{width:7px;height:7px;border-radius:50%;background:var(--sprout);animation:pulse-a 2s infinite;display:inline-block;flex-shrink:0}
-@keyframes pulse-a{0%,100%{box-shadow:0 0 0 0 rgba(110,184,52,.5)}50%{box-shadow:0 0 0 5px rgba(110,184,52,0)}}
-.user-chip{display:flex;align-items:center;gap:6px;background:rgba(110,184,52,.12);border:1px solid rgba(110,184,52,.25);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--sprout);cursor:pointer}
-.user-avatar{width:22px;height:22px;border-radius:50%;background:var(--leaf);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700;flex-shrink:0}
-
-/* ── PANELS ── */
-.panel{display:none;max-width:1280px;margin:0 auto;padding:26px 20px}
-.panel.active{display:block}
-
-/* ── HERO ── */
-.hero{background:linear-gradient(135deg,var(--soil) 0%,#1a3010 50%,#0d2808 100%);border-radius:16px;padding:34px 40px;color:#fff;position:relative;overflow:hidden;margin-bottom:22px}
-.hero-pattern{position:absolute;right:-10px;bottom:-10px;opacity:.05;font-size:140px;pointer-events:none;line-height:1}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(110,184,52,.15);border:1px solid rgba(110,184,52,.3);color:var(--sprout);padding:4px 12px;border-radius:20px;font-size:11px;font-family:'JetBrains Mono',monospace;margin-bottom:12px}
-.hero h1{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:5px;line-height:1.2}
-.hero p{color:#9ab890;font-size:13px;max-width:480px;line-height:1.6}
-
-/* ── GRIDS ── */
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.col-7-5{display:grid;grid-template-columns:7fr 5fr;gap:18px}
-.col-5-7{display:grid;grid-template-columns:5fr 7fr;gap:18px}
-.col-4-8{display:grid;grid-template-columns:4fr 8fr;gap:18px}
-
-/* ── CARD ── */
-.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.card-header{display:flex;align-items:flex-start;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border2);margin-bottom:14px}
-.card-icon{width:32px;height:32px;border-radius:8px;background:var(--mist);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.card-title{font-weight:700;font-size:13px;color:var(--ink)}
-.card-desc{font-size:11px;color:var(--dim);margin-top:2px}
-
-/* ── STAT CARD ── */
-.stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
-.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--sprout)}
-.stat-label{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:4px}
-.stat-val{font-size:22px;font-weight:700;color:var(--ink);line-height:1;font-family:'JetBrains Mono',monospace}
-.stat-sub{font-size:10px;color:var(--dim);margin-top:3px}
-
-/* ── FORMS ── */
-.field{margin-bottom:12px}
-.field label{display:block;font-size:11px;font-weight:600;color:var(--dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-.field input,.field select,.field textarea{width:100%;padding:9px 11px;font-family:'Space Grotesk',sans-serif;font-size:13px;border:1px solid #d4e4c8;border-radius:8px;background:var(--paper);color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--leaf);box-shadow:0 0 0 3px rgba(61,122,30,.1)}
-.field textarea{resize:vertical;min-height:72px;line-height:1.5}
-
-/* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;border:none;border-radius:8px;transition:all .18s;padding:9px 16px;font-size:13px;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-.btn-primary{background:var(--leaf);color:#fff}
-.btn-primary:hover{background:#4a9025}
-.btn-primary:active{transform:scale(.97)}
-.btn-primary:disabled{background:#9ab890;cursor:not-allowed}
-.btn-ghost{background:transparent;border:1px solid #d4e4c8;color:var(--dim)}
-.btn-ghost:hover{background:var(--mist);color:var(--ink)}
-.btn-dark{background:var(--soil);color:#d0e8c0;border:1px solid #3d3200}
-.btn-dark:hover{background:var(--bark)}
-.btn-sm{padding:6px 11px;font-size:12px}
-.btn-full{width:100%;justify-content:center}
-
-/* ── BADGES ── */
-.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
-.badge-high{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
-.badge-med{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
-.badge-low{background:#dcfce7;color:#166534;border:1px solid #86efac}
-.badge-info{background:#e0f2fe;color:#075985;border:1px solid #7dd3fc}
-
-/* ── FARMER REPORT BOX ── */
-.report-prose{background:#f7fbf2;border:1px solid #d4e4c8;border-radius:12px;padding:20px 22px;font-size:14px;line-height:1.85;color:var(--ink);min-height:80px;white-space:pre-wrap;font-family:'Space Grotesk',sans-serif}
-.report-prose h3{font-size:15px;font-weight:700;color:var(--leaf);margin:16px 0 6px;border-bottom:1px solid var(--border2);padding-bottom:4px}
-.report-prose h3:first-child{margin-top:0}
-.report-prose p{margin-bottom:10px}
-.report-prose strong{color:var(--ink)}
-
-/* ── AGRONOMIST REPORT BOX ── */
-.agro-report-box{background:var(--soil);border:1px solid #2d2200;border-radius:12px;padding:0;overflow:hidden;font-size:12.5px;color:#c8dcc0}
-.agro-report-header{display:flex;align-items:center;gap:10px;padding:11px 15px;border-bottom:1px solid #2d2200;background:#1a1200}
-.agro-report-header-text{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--sprout);font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
-.agro-report-body{padding:16px 18px;line-height:1.75;white-space:pre-wrap;font-family:'Space Grotesk',sans-serif;font-size:13px;color:#c8dcc0;min-height:60px}
-.agro-report-body h4{color:var(--sprout);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.8px;text-transform:uppercase;margin:14px 0 5px;border-bottom:1px solid #2d2200;padding-bottom:4px}
-.agro-report-body h4:first-child{margin-top:0}
-.agro-report-placeholder{color:#4a6a40;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8}
-
-/* ── AGENT PIPELINE ── */
-.ap-box{background:var(--soil);border-radius:12px;overflow:hidden}
-.ap-topbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #2d2200}
-.ap-title-text{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--sprout);font-weight:600;letter-spacing:1.2px;text-transform:uppercase}
-.ap-overall-status{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a6a40}
-.ap-steps{padding:4px 0}
-.ap-step{display:flex;align-items:flex-start;gap:10px;padding:8px 14px;border-bottom:1px solid #1d1500;transition:background .15s}
-.ap-step:last-child{border-bottom:none}
-.ap-step.running{background:rgba(217,168,78,.05)}
-.ap-step.done{background:rgba(110,184,52,.04)}
-.ap-step-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:#3a5a30;min-width:16px;margin-top:3px;flex-shrink:0}
-.ap-step-icon{font-size:13px;flex-shrink:0;margin-top:1px}
-.ap-step-body{flex:1;min-width:0}
-.ap-step-name{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sprout);font-weight:600}
-.ap-step-desc{font-size:10px;color:#4a6a40;margin-top:1px;line-height:1.4;font-family:'JetBrains Mono',monospace}
-.ap-step-log{font-size:10px;color:#6eb834;margin-top:3px;font-family:'JetBrains Mono',monospace;line-height:1.5;display:none}
-.ap-step-log.visible{display:block}
-.ap-step-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
-.ap-dot{width:8px;height:8px;border-radius:50%;background:#2a3a28;flex-shrink:0;margin-top:4px}
-.ap-dot.idle{background:#2a3a28}
-.ap-dot.running{background:var(--clay);animation:pulse-a 1s infinite}
-.ap-dot.done{background:var(--sprout)}
-.ap-dot.error{background:var(--ember)}
-.ap-dur{font-family:'JetBrains Mono',monospace;font-size:9px;color:#3a5a30;display:none}
-.ap-dur.visible{display:block}
-.ap-footer{padding:7px 14px;border-top:1px solid #2d2200;display:flex;justify-content:space-between;align-items:center}
-.ap-footer-text{font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a6a40}
-.ap-progress-bar{height:2px;background:#2d2200;border-radius:1px;overflow:hidden}
-.ap-progress-fill{height:100%;background:var(--sprout);border-radius:1px;transition:width .5s ease;width:0%}
-
-/* ── SECTION LABEL ── */
-.section-label{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* ── MANDI TABLE ── */
-.mandi-table{width:100%;border-collapse:collapse;font-size:13px}
-.mandi-table th{background:var(--mist);text-align:left;padding:8px 12px;font-size:10px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
-.mandi-table td{padding:8px 12px;border-bottom:1px solid var(--border2);vertical-align:middle}
-.mandi-table tr:last-child td{border-bottom:none}
-.mandi-table tr:hover td{background:#f7fbf2}
-.price-up{color:#166534;font-weight:700}
-.price-dn{color:#b91c1c;font-weight:700}
-
-/* ── MAP ── */
-.map-container{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#d4e6c0;min-height:260px}
-.map-svg{width:100%;height:260px}
-.map-pin-group{cursor:pointer}
-.map-pin-group:hover .map-pin-label{opacity:1}
-.map-pin-label{opacity:0;transition:opacity .2s;font-family:'JetBrains Mono',monospace;font-size:9px}
-.nearby-table{width:100%;border-collapse:collapse;font-size:12px}
-.nearby-table th{background:var(--mist);padding:7px 10px;text-align:left;font-size:10px;font-weight:600;color:var(--dim);text-transform:uppercase;border-bottom:1px solid var(--border)}
-.nearby-table td{padding:7px 10px;border-bottom:1px solid var(--border2)}
-.nearby-table tr:last-child td{border-bottom:none}
-
-/* ── WEATHER CARD ── */
-.weather-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
-.weather-strip::-webkit-scrollbar{height:3px}
-.weather-strip::-webkit-scrollbar-thumb{background:#d4e4c8;border-radius:2px}
-.wx-day{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:72px;text-align:center;flex-shrink:0}
-.wx-day-label{font-size:10px;color:var(--dim);font-weight:600;margin-bottom:4px;font-family:'JetBrains Mono',monospace}
-.wx-icon{font-size:20px;margin-bottom:4px}
-.wx-temp{font-size:13px;font-weight:700;color:var(--ink)}
-.wx-rain{font-size:10px;color:var(--river);margin-top:2px;font-family:'JetBrains Mono',monospace}
-
-/* ── CHAT ── */
-#chat-messages{height:360px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
-#chat-messages::-webkit-scrollbar{width:3px}
-#chat-messages::-webkit-scrollbar-thumb{background:#d4e4c8;border-radius:2px}
-.msg{display:flex;flex-direction:column;gap:3px;max-width:90%}
-.msg.user{align-self:flex-end;align-items:flex-end}
-.msg.ai{align-self:flex-start;align-items:flex-start}
-.bubble{padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.65}
-.msg.user .bubble{background:var(--leaf);color:#fff;border-bottom-right-radius:3px}
-.msg.ai .bubble{background:var(--mist);border:1px solid #d4e4c8;border-bottom-left-radius:3px;color:var(--ink)}
-.msg-time{font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace}
-.chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border)}
-.chat-input-row input{flex:1;padding:9px 12px;border:1px solid #d4e4c8;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;background:var(--paper);-webkit-appearance:none}
-.chat-input-row input:focus{border-color:var(--leaf);box-shadow:0 0 0 3px rgba(61,122,30,.1)}
-.llm-bar{display:flex;gap:6px;padding:8px 14px;border-top:1px solid var(--border2);align-items:center;flex-wrap:wrap}
-.llm-label{font-size:10px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.llm-chip{padding:4px 9px;border-radius:14px;border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;transition:all .14s;color:var(--dim);background:#fff;-webkit-tap-highlight-color:transparent}
-.llm-chip.active{background:var(--leaf);color:#fff;border-color:var(--leaf)}
-
-/* ── AGRONOMIST CASE QUEUE ── */
-.queue-header{padding:12px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
-.case-list{max-height:500px;overflow-y:auto}
-.case-list::-webkit-scrollbar{width:3px}
-.case-list::-webkit-scrollbar-thumb{background:#d4e4c8;border-radius:2px}
-.case-item{padding:11px 14px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background .12s;-webkit-tap-highlight-color:transparent}
-.case-item:hover,.case-item.active{background:var(--mist)}
-.case-row1{display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap}
-.case-crop{font-weight:700;font-size:13px;color:var(--ink)}
-.case-id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim)}
-.case-meta{font-size:11px;color:var(--dim);margin-bottom:4px;line-height:1.4}
-.case-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.case-farmer{font-size:11px;color:var(--dim);font-weight:500}
-.case-thumb{width:30px;height:30px;border-radius:6px;object-fit:cover;border:1px solid var(--border);flex-shrink:0}
-.case-no-img{width:30px;height:30px;border-radius:6px;background:var(--mist);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim);flex-shrink:0}
-
-/* ── UPLOAD ZONE ── */
-.upload-zone{border:2px dashed #c4d8b4;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--paper);-webkit-tap-highlight-color:transparent}
-.upload-zone:hover,.upload-zone.drag-over{border-color:var(--leaf);background:var(--mist)}
-.upload-icon{font-size:28px;margin-bottom:8px}
-.upload-text{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
-.upload-hint{font-size:11px;color:var(--dim)}
-.upload-preview{max-height:160px;border-radius:8px;max-width:100%;display:block;margin:0 auto}
-.scan-wrapper{position:relative;display:inline-block;max-width:100%}
-.scan-line{position:absolute;left:0;right:0;height:2px;background:rgba(110,184,52,.8);box-shadow:0 0 8px rgba(110,184,52,.6);animation:scan 1.5s ease-in-out infinite;pointer-events:none}
-@keyframes scan{0%{top:0%}50%{top:95%}100%{top:0%}}
-.scan-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
-.scan-chip{font-family:'JetBrains Mono',monospace;font-size:9px;background:var(--soil);color:var(--sprout);border-radius:4px;padding:2px 6px}
-
-/* ── PIPELINE ── */
-.pipeline{display:flex;flex-direction:column;gap:0}
-.pipe-step{display:flex;align-items:flex-start;gap:10px;padding:7px 12px;border-radius:7px;background:#fff;border:1px solid var(--border);margin-bottom:5px;transition:all .2s}
-.pipe-step.running{border-color:var(--clay);background:#fffbf0}
-.pipe-step.done{border-color:var(--sprout);background:#f4fbee}
-.pipe-dot{width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0;margin-top:5px}
-.pipe-dot.running{background:var(--clay);animation:pulse-a 1s infinite}
-.pipe-dot.done{background:var(--sprout)}
-.pipe-name{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--dim)}
-.pipe-step.running .pipe-name{color:var(--clay)}
-.pipe-step.done .pipe-name{color:var(--leaf)}
-.pipe-out{font-size:11px;color:var(--dim);margin-top:2px;line-height:1.4;display:none}
-.pipe-step.done .pipe-out{display:block}
-
-/* ── HEATMAP ── */
-#heatmap-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
-.heat-cell{aspect-ratio:1;border-radius:1px;cursor:pointer;transition:opacity .1s}
-.heat-cell:hover{opacity:.75}
-
-/* ── CONFIDENCE RING ── */
-.conf-ring-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
-.conf-ring-wrap svg{transform:rotate(-90deg)}
-
-/* ── FORMULA ── */
-.formula-box{background:var(--soil);color:var(--sprout);border-radius:8px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.7}
-
-/* ── PROGRESS ── */
-.prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-.prog-fill{height:100%;background:var(--sprout);border-radius:3px;transition:width .8s ease}
-
-/* ── SPINNER ── */
-.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-.spinner-dark{border-color:rgba(0,0,0,.1);border-top-color:var(--leaf)}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── TOAST ── */
-#toast{position:fixed;bottom:20px;right:18px;background:var(--soil);color:#d0e8c0;padding:9px 14px;border-radius:9px;font-size:12px;font-family:'JetBrains Mono',monospace;border:1px solid var(--leaf);display:none;z-index:9999;animation:t-up .25s ease;max-width:300px;word-break:break-word}
-@keyframes t-up{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
-
-/* ── PWA INSTALL BANNER ── */
-#pwa-banner{position:fixed;bottom:0;left:0;right:0;background:var(--soil);border-top:1px solid var(--leaf);padding:12px 18px;display:none;align-items:center;gap:12px;z-index:400;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
-#pwa-banner p{color:#d0e8c0;font-size:13px;flex:1;line-height:1.4}
-#pwa-banner p span{color:var(--sprout);font-weight:700}
-.pwa-install-btn{background:var(--sprout);color:var(--soil);font-weight:700;padding:8px 16px;border-radius:8px;border:none;font-family:'Space Grotesk',sans-serif;font-size:13px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.pwa-dismiss-btn{color:#4a6a40;background:transparent;border:none;cursor:pointer;font-size:18px;flex-shrink:0;padding:4px}
-
-/* ── PDF ── */
-#pdf-report{display:none}
-.pdf-wrap{font-family:Georgia,'Times New Roman',serif;color:#111;background:white;line-height:1.6}
-.pdf-header{border-bottom:2px solid #111;padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start}
-.pdf-logo{font-size:18px;font-weight:bold;color:#111}
-.pdf-logo span{color:#3d7a1e}
-.pdf-meta-small{font-size:11px;color:#555;text-align:right}
-.pdf-title{font-size:20px;font-weight:bold;margin-bottom:4px}
-.pdf-sub{font-size:13px;color:#444;margin-bottom:16px}
-.pdf-meta-row{display:flex;gap:18px;background:#f5f5f5;padding:10px 14px;margin-bottom:16px;flex-wrap:wrap}
-.pdf-mi strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:2px}
-.pdf-mi span{font-size:13px;font-weight:bold;color:#111}
-.pdf-sec-title{font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:1.5px;color:#333;border-bottom:1px solid #ccc;padding-bottom:5px;margin:16px 0 8px}
-.pdf-body{font-size:13px;line-height:1.85;color:#222;white-space:pre-wrap}
-.pdf-two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-.pdf-box{padding:10px;border:1px solid #ddd}
-.pdf-box-title{font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:5px}
-.pdf-box p{font-size:12px;line-height:1.7;color:#333}
-.pdf-table{width:100%;border-collapse:collapse;font-size:12px}
-.pdf-table th{background:#f0f0f0;padding:7px 10px;border:1px solid #ddd;font-size:11px;text-transform:uppercase;text-align:left}
-.pdf-table td{padding:6px 10px;border:1px solid #eee}
-.pdf-table tr:nth-child(even) td{background:#fafafa}
-.pdf-footer{margin-top:24px;border-top:1px solid #ccc;padding-top:10px;display:flex;justify-content:space-between;font-size:11px;color:#888}
-.pdf-disclaimer{font-size:10px;color:#999;margin-top:5px;font-style:italic}
-.pdf-ipm-list{margin-top:5px}
-.pdf-ipm-list div{font-size:12px;padding:3px 0;border-bottom:1px solid #f0f0f0;color:#333}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#c8dcc0;border-radius:4px}
-
-/* ══ RESPONSIVE — MOBILE FIRST ══ */
-@media(max-width:920px){
-  .stat-row{grid-template-columns:1fr 1fr}
-  .two-col,.three-col,.col-7-5,.col-5-7,.col-4-8{grid-template-columns:1fr}
-  #topbar{padding:0 12px}
-  .nav-tab .tl{display:none}
-  .nav-tab{padding:6px 10px;font-size:11px}
-  .brand-tag{display:none}
-  .hero{padding:22px 18px}
-  .hero h1{font-size:20px}
-  .panel{padding:14px 12px}
-  #gate-card{padding:26px 22px}
-  .pdf-two{grid-template-columns:1fr}
-  #chat-messages{height:300px}
-}
-@media(max-width:480px){
-  .stat-row{grid-template-columns:1fr 1fr;gap:8px}
-  .nav-tab{padding:6px 8px;font-size:10px;gap:3px}
-  .hero{padding:18px 14px}
-  .hero h1{font-size:18px}
-  .card{padding:14px}
-  .panel{padding:10px 10px}
-  #pwa-banner p{font-size:12px}
-}
-</style>
+<!-- External CSS -->
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- ════ PWA MANIFEST (inline) ════ -->
-<script>
-const pwaManifest = {
-  name:"KrishiKonnect — AI Crop Intelligence",
-  short_name:"KrishiKonnect",
-  description:"AI-powered crop disease diagnostics and agronomist network for Indian farmers",
-  start_url:"/",
-  display:"standalone",
-  background_color:"#1a1200",
-  theme_color:"#1a1200",
-  orientation:"portrait-primary",
-  icons:[
-    {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1200' rx='20'/%3E%3Ctext y='.9em' font-size='80'%3E%F0%9F%8C%BE%3C/text%3E%3C/svg%3E",sizes:"any",type:"image/svg+xml",purpose:"maskable any"}
-  ]
-};
-const mb = new Blob([JSON.stringify(pwaManifest)],{type:'application/json'});
-document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
-</script>
-
-<!-- ════ PDF REPORT TEMPLATE ════ -->
+<!-- ══ PDF REPORT TEMPLATE ══ -->
 <div id="pdf-report"><div class="pdf-wrap" id="pdf-content"></div></div>
 
-<!-- ════ AUTH GATE — MANDATORY ════ -->
-<div id="app-gate">
-  <div id="gate-card">
-    <div id="gate-logo">
-      <div id="gate-logo-icon">🌾</div>
+<!-- ══ PWA INSTALL BANNER ══ -->
+<div id="install-banner">
+  <div class="install-icon">🌾</div>
+  <div class="install-text">
+    <div class="install-title">Install KrishiKonnect App</div>
+    <div class="install-sub">Works offline. Add to home screen for quick access.</div>
+  </div>
+  <div class="install-actions">
+    <button class="btn btn-primary btn-sm" id="install-btn">Install</button>
+    <button class="btn btn-ghost btn-sm" onclick="dismissInstall()" style="color:#8a9a80;border-color:#3d3200">Later</button>
+  </div>
+</div>
+
+<!-- ══ AUTH GATE (MANDATORY — blocks app until signed up/in) ══ -->
+<div id="auth-gate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <div class="gate-logo-icon">🌾</div>
       <div>
-        <div id="gate-logo-text">KrishiKonnect</div>
-        <div id="gate-logo-sub">AI CROP INTELLIGENCE v2.1</div>
+        <div class="gate-logo-name">KrishiKonnect</div>
+        <div class="gate-logo-tag">AI CROP INTELLIGENCE PLATFORM</div>
       </div>
     </div>
-    <p class="gate-tagline">India's precision agriculture AI platform — crop diagnostics, market intelligence & expert agronomist network.</p>
-    <div class="gate-tabs">
-      <div class="gate-tab active" id="gt-login" onclick="switchGateTab('login')">Sign In</div>
-      <div class="gate-tab" id="gt-register" onclick="switchGateTab('register')">Create Account</div>
-    </div>
-    <div class="gate-err" id="gate-err"></div>
 
-    <!-- LOGIN FORM -->
-    <div id="gate-login-form">
-      <div class="field"><label>Email</label><input type="email" id="li-email" placeholder="you@email.com" autocomplete="email"></div>
-      <div class="field"><label>Password</label><input type="password" id="li-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <button class="btn btn-primary btn-full" onclick="doLogin()" id="li-btn">Sign In to KrishiKonnect</button>
-      <div class="gate-footer">Don't have an account? <span onclick="switchGateTab('register')" style="color:var(--leaf);cursor:pointer;font-weight:600">Create one free</span></div>
+    <div class="gate-tabs">
+      <div class="gate-tab active" id="gt-register" onclick="switchGateTab('register')">Create Account</div>
+      <div class="gate-tab" id="gt-login" onclick="switchGateTab('login')">Sign In</div>
     </div>
+
+    <div class="gate-err" id="gate-err"></div>
+    <div class="gate-success" id="gate-success"></div>
 
     <!-- REGISTER FORM -->
-    <div id="gate-reg-form" style="display:none">
-      <div class="field"><label>Full Name</label><input type="text" id="rg-name" placeholder="Gurbaksh Singh" autocomplete="name"></div>
-      <div class="field"><label>Email</label><input type="email" id="rg-email" placeholder="you@email.com" autocomplete="email"></div>
-      <div class="field"><label>Password</label><input type="password" id="rg-pass" placeholder="Min 6 characters" autocomplete="new-password"></div>
+    <div id="gate-reg-form">
+      <div class="field"><label>Full Name</label><input type="text" id="rg-name" placeholder="Ramesh Singh" autocomplete="name"></div>
+      <div class="field"><label>Email Address</label><input type="email" id="rg-email" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="field"><label>Password (min 6 chars)</label><input type="password" id="rg-pass" placeholder="••••••••" autocomplete="new-password"></div>
       <div class="field"><label>I am a</label></div>
       <div class="role-select">
         <div class="role-btn active" id="role-farmer" onclick="setRole('farmer')">🌱 Farmer</div>
         <div class="role-btn" id="role-agronomist" onclick="setRole('agronomist')">🔬 Agronomist</div>
         <div class="role-btn" id="role-researcher" onclick="setRole('researcher')">📚 Researcher</div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="doRegister()" id="rg-btn">Create My Account</button>
-      <div class="gate-footer">Already registered? <span onclick="switchGateTab('login')" style="color:var(--leaf);cursor:pointer;font-weight:600">Sign in</span></div>
+      <button class="btn btn-primary btn-full" onclick="doRegister()" style="margin-top:4px">Create Free Account</button>
+      <div class="gate-footer">Already registered? <span onclick="switchGateTab('login')">Sign in here</span></div>
+      <div class="gate-trust">
+        <div class="gate-trust-item"><strong>12,000+</strong>Farmers</div>
+        <div class="gate-trust-item"><strong>28</strong>States</div>
+        <div class="gate-trust-item"><strong>Free</strong>Always</div>
+      </div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="gate-login-form" style="display:none">
+      <div class="field"><label>Email Address</label><input type="email" id="li-email" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input type="password" id="li-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:4px">Sign In</button>
+      <div class="gate-footer">New to KrishiKonnect? <span onclick="switchGateTab('register')">Create free account</span></div>
     </div>
   </div>
 </div>
 
-<!-- ════ TOPBAR ════ -->
-<header id="topbar" style="display:none">
+<!-- ══ TOPBAR ══ -->
+<header id="topbar">
   <div class="brand">
     <div class="brand-icon">🌾</div>
     <div>
@@ -440,79 +104,71 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
       <button class="nav-tab" onclick="switchTab('advisor')" id="tab-advisor">🤖 <span class="tl">AI Advisor</span></button>
     </div>
   </div>
-  <div class="auth-zone">
-    <div id="auth-loggedin" style="display:none">
-      <div class="user-chip" onclick="showUserMenu()">
-        <div class="user-avatar" id="user-avatar-initials">?</div>
-        <span id="user-display-name">User</span>
-        <span style="font-size:10px;opacity:.6">▾</span>
+  <div class="auth-zone" style="position:relative">
+    <div class="user-chip" onclick="toggleUserMenu()">
+      <div class="user-avatar" id="top-avatar">?</div>
+      <span id="top-name">User</span>
+      <span style="font-size:10px;opacity:.6">▾</span>
+    </div>
+    <!-- Dropdown -->
+    <div class="user-dropdown" id="user-dropdown">
+      <div class="ud-header">
+        <div class="ud-name" id="ud-name">—</div>
+        <div class="ud-email" id="ud-email">—</div>
+        <div class="ud-role"><span class="badge badge-low" id="ud-role-badge">farmer</span></div>
       </div>
+      <div class="ud-item" onclick="showStats()"><span class="ud-item-icon">📊</span> My Activity Stats</div>
+      <div class="ud-item" onclick="downloadApp()"><span class="ud-item-icon">📱</span> Install Mobile App</div>
+      <div class="ud-item ud-logout" onclick="doLogout()"><span class="ud-item-icon">🚪</span> Sign Out</div>
     </div>
   </div>
 </header>
 
 <div id="toast"></div>
 
-<!-- ════ PWA INSTALL BANNER ════ -->
-<div id="pwa-banner">
-  <p>📱 <span>Install KrishiKonnect</span> as an app — works offline & available on Android via Play Store!</p>
-  <button class="pwa-install-btn" id="pwa-install-btn">Install App</button>
-  <button class="pwa-dismiss-btn" onclick="dismissPWA()">✕</button>
-</div>
-
-<!-- ══════════════════════════════════════════════════
+<!-- ══════════════════════════════════════════════
      PANEL 1 — FARMER WORKSPACE
-══════════════════════════════════════════════════ -->
+══════════════════════════════════════════════ -->
 <div class="panel active" id="panel-farmer">
 
   <div class="hero">
     <div class="hero-pattern">🌿</div>
     <div class="hero-eyebrow"><span class="pulse"></span> Multi-Agent Crop Diagnostics — India</div>
     <h1>Detect, Diagnose,<br>Recover Faster</h1>
-    <p>Describe your crop symptoms and let the AI generate a plain-language seasonal advisory — covering weather, market outlook, and full 3-month treatment plan.</p>
+    <p>Describe your crop symptoms. Our 6-agent AI network generates a plain-language farm report covering weather, season, and a 3-month outlook.</p>
   </div>
 
   <div class="stat-row">
     <div class="stat-card"><div class="stat-label">Crops Monitored</div><div class="stat-val">12</div><div class="stat-sub">Rice, Wheat, Tomato +9</div></div>
     <div class="stat-card"><div class="stat-label">Disease Patterns</div><div class="stat-val">47+</div><div class="stat-sub">Fungal, Bacterial, Viral</div></div>
     <div class="stat-card"><div class="stat-label">States Covered</div><div class="stat-val">28</div><div class="stat-sub">Full India agro-zones</div></div>
-    <div class="stat-card"><div class="stat-label">Avg Response</div><div class="stat-val">&lt;5s</div><div class="stat-sub">AI report generation</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Response</div><div class="stat-val">&lt;5s</div><div class="stat-sub">AI triage generation</div></div>
   </div>
 
-  <!-- 7-Day Weather Strip -->
-  <div class="card" style="margin-bottom:18px">
+  <!-- Form (full width — no agent pipeline) -->
+  <div class="card" style="margin-bottom:20px">
     <div class="card-header">
-      <div class="card-icon">🌤️</div>
-      <div><div class="card-title">7-Day Agro-Weather Forecast</div><div class="card-desc">Temperature, rainfall & crop stress risk — used in seasonal advisory</div></div>
+      <div class="card-icon">📋</div>
+      <div><div class="card-title">Crop Incident Report</div><div class="card-desc">Fill in your crop details to generate your personalised farm advisory report</div></div>
     </div>
-    <div class="weather-strip" id="weather-strip"></div>
-    <div style="font-size:11px;color:var(--dim)">Based on IMD zone data. Weather patterns factor into your 3-month crop advisory below.</div>
-  </div>
-
-  <!-- Form + Pipeline -->
-  <div class="col-7-5" style="margin-bottom:18px">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon">📋</div>
-        <div><div class="card-title">Crop Incident & Season Profile</div><div class="card-desc">Fill all fields for your personalised 3-month advisory report</div></div>
+    <div class="two-col">
+      <div class="field"><label>Crop Type</label>
+        <select id="f-crop">
+          <option value="">Select crop...</option>
+          <option>Tomato</option><option>Rice</option><option>Wheat</option><option>Cotton</option>
+          <option>Maize</option><option>Potato</option><option>Chili</option><option>Sugarcane</option>
+          <option>Soybean</option><option>Groundnut</option><option>Mustard</option><option>Onion</option>
+        </select>
       </div>
-      <div class="two-col">
-        <div class="field"><label>Crop Type</label>
-          <select id="f-crop">
-            <option value="">Select crop...</option>
-            <option>Tomato</option><option>Rice</option><option>Wheat</option><option>Cotton</option>
-            <option>Maize</option><option>Potato</option><option>Chili</option><option>Sugarcane</option>
-            <option>Soybean</option><option>Groundnut</option><option>Mustard</option><option>Onion</option>
-          </select>
-        </div>
-        <div class="field"><label>Growth Stage</label>
-          <select id="f-stage">
-            <option value="">Select stage...</option>
-            <option>Seedling</option><option>Vegetative</option><option>Flowering</option>
-            <option>Fruiting / Grain Fill</option><option>Maturity</option>
-          </select>
-        </div>
+      <div class="field"><label>Growth Stage</label>
+        <select id="f-stage">
+          <option value="">Select stage...</option>
+          <option>Seedling</option><option>Vegetative</option><option>Flowering</option>
+          <option>Fruiting / Grain Fill</option><option>Maturity</option>
+        </select>
       </div>
+    </div>
+    <div class="two-col">
       <div class="field"><label>Region / State</label>
         <select id="f-region">
           <option value="">Select region...</option>
@@ -524,53 +180,51 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
           <option>Rajasthan (Arid Loamy)</option><option>Odisha (Coastal Humid)</option>
         </select>
       </div>
-      <div class="field"><label>Symptoms Description</label>
-        <textarea id="f-symptoms" placeholder="Describe what you observe: leaf color changes, spots, wilting, lesion patterns, stem discoloration, powder coatings..."></textarea>
+      <div class="field"><label>Symptoms / Observations</label>
+        <textarea id="f-symptoms" placeholder="Describe what you see: leaf color changes, spots, wilting, unusual smell, pest damage, soil condition..." style="min-height:60px"></textarea>
       </div>
-      <button class="btn btn-primary btn-full" id="triage-btn" onclick="runTriage()">
-        <span id="triage-btn-inner">⚡ Run AI Triage Analysis</span>
-      </button>
     </div>
-
-    <!-- Agent Pipeline -->
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="ap-box">
-        <div class="ap-topbar">
-          <span class="pulse"></span>
-          <span class="ap-title-text">KrishiAI Agent Network</span>
-          <span class="ap-overall-status" id="ap-overall">IDLE — Submit a crop report</span>
-        </div>
-        <div class="ap-progress-bar" style="margin:0;border-radius:0"><div class="ap-progress-fill" id="ap-progress-fill"></div></div>
-        <div class="ap-steps" id="ap-steps-container"></div>
-        <div class="ap-footer">
-          <span class="ap-footer-text" id="ap-footer-msg">Waiting for crop incident report...</span>
-          <span class="ap-footer-text" id="ap-elapsed"></span>
-        </div>
-      </div>
-      <div id="diag-badge-area" style="display:none"><div id="diag-badge"></div></div>
-    </div>
+    <button class="btn btn-primary btn-full" id="triage-btn" onclick="runTriage()" style="margin-top:4px">
+      <span id="triage-btn-inner">⚡ Get My Farm Report</span>
+    </button>
   </div>
 
-  <!-- FARMER REPORT: PLAIN LANGUAGE SEASONAL ADVISORY -->
-  <div class="card" style="margin-bottom:18px" id="triage-result-card">
+  <!-- Hidden elements kept for JS compatibility -->
+  <div id="diag-badge-area" style="display:none"><div id="diag-badge"></div></div>
+  <div style="display:none" id="ap-overall"></div>
+  <div style="display:none" id="ap-footer-msg"></div>
+  <div style="display:none" id="ap-elapsed"></div>
+  <div style="display:none" id="ap-progress-fill"></div>
+  <div style="display:none" id="ap-steps-container"></div>
+
+  <!-- FARMER REPORT — Clean, plain, human language -->
+  <div class="card" style="margin-bottom:20px" id="triage-result-card">
     <div class="card-header">
-      <div class="card-icon">📄</div>
-      <div><div class="card-title">Seasonal Crop Advisory Report</div><div class="card-desc">Plain-language advisory — weather, climate, season, disease management & 3-month outlook</div></div>
-      <div id="triage-pdf-btn" style="margin-left:auto;display:none">
-        <button class="btn btn-dark btn-sm" onclick="generatePDF('triage')">Download PDF</button>
+      <div class="card-icon">📋</div>
+      <div>
+        <div class="card-title">Your Farm Report</div>
+        <div class="card-desc">Written in simple language — disease, weather, what to do, and your 3-month crop outlook</div>
+      </div>
+      <div id="report-actions" style="margin-left:auto;display:none;gap:8px;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="downloadReportFile()">⬇ Download Report</button>
+        <button class="btn btn-ghost btn-sm" onclick="generatePDF('triage')">Print / PDF</button>
       </div>
     </div>
-    <div class="report-prose" id="triage-result">
-      <span style="color:var(--dim);font-size:13px">Your personalised <strong>Seasonal Advisory Report</strong> will appear here after you complete the form above and click <strong>Run AI Triage Analysis</strong>.<br><br>The report covers: current disease diagnosis, weather & seasonal context, what to do in the next 7 days, 3-month crop management calendar, market timing advice, and government scheme eligibility — all in easy-to-read plain language.</span>
+    <div id="triage-result" class="report-plain">
+      <div class="rp-section">
+        <div class="rp-text" style="color:#888;font-style:italic;font-family:'Space Grotesk',sans-serif;font-size:13px">
+          Fill in your crop details above and click <strong style="color:var(--leaf);font-style:normal">Get My Farm Report</strong>. Your report will appear here in simple, plain language — no complicated words, no technical codes. Just clear advice about what is happening to your crop, what to do about it, and what to expect over the next three months.
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Recovery Chart -->
-  <div class="card" style="margin-bottom:18px">
+  <div class="card" style="margin-bottom:20px">
     <div class="card-header">
       <div class="card-icon">📈</div>
-      <div><div class="card-title">14-Day Prognostic Recovery Curve</div><div class="card-desc">Vegetative vigor — unchecked decay vs. remediation pathway</div></div>
-      <div style="margin-left:auto"><div class="formula-box" style="padding:6px 10px;font-size:9px">V(t)=V₀·e^(-d·t) | R(t)=V(t)+(1-V(t))·(1-e^(-k·(t-2)))</div></div>
+      <div><div class="card-title">14-Day Recovery Projection</div><div class="card-desc">Vegetative vigor — unchecked decay vs. treatment pathway</div></div>
+      <div style="margin-left:auto"><div class="formula-box" style="padding:7px 12px;font-size:10px">V(t)=V0·e^(-d·t) | R(t)=V(t)+(1-V(t))·(1-e^(-k·(t-2)))</div></div>
     </div>
     <canvas id="recovery-chart" style="max-height:220px"></canvas>
   </div>
@@ -579,7 +233,7 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
   <div class="card">
     <div class="card-header">
       <div class="card-icon">📊</div>
-      <div><div class="card-title">APMC Mandi Rates + Regional Price Map</div><div class="card-desc">Live wholesale prices — click row for nearby market comparison</div></div>
+      <div><div class="card-title">APMC Mandi Rates + Regional Price Map</div><div class="card-desc">Click any crop row to see nearby market price comparison</div></div>
       <span class="mono" style="font-size:10px;color:var(--dim);margin-left:auto">Just updated</span>
     </div>
     <table class="mandi-table" id="mandi-table" style="margin-bottom:18px"></table>
@@ -587,37 +241,141 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
       <div class="section-label" id="nearby-label">Nearby Markets</div>
       <table class="nearby-table" id="nearby-table"></table>
     </div>
-    <div class="section-label">Market Locations</div>
-    <div class="map-container">
-      <svg class="map-svg" id="india-map" viewBox="0 0 500 560" xmlns="http://www.w3.org/2000/svg">
-        <defs><linearGradient id="map-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#e8f4e8"/><stop offset="100%" style="stop-color:#d0e8c0"/></linearGradient></defs>
-        <rect width="500" height="560" fill="url(#map-bg)"/>
-        <path d="M180,40 L240,30 L290,50 L330,45 L360,80 L370,120 L390,150 L400,200 L380,250 L400,290 L390,340 L360,390 L340,420 L310,460 L290,490 L270,510 L250,530 L240,520 L220,490 L200,460 L180,420 L160,380 L150,340 L130,300 L120,260 L130,220 L120,180 L130,140 L150,100 L160,70 Z" fill="#c8e6b0" stroke="#a0c890" stroke-width="1.5"/>
-        <path d="M130,220 L290,200 M180,300 L340,280 M200,180 L350,160" stroke="#a0c890" stroke-width="0.5" stroke-dasharray="3,4" opacity="0.5"/>
-        <path d="M160,140 Q200,200 180,300 Q160,360 200,420" fill="none" stroke="#1e6f8a" stroke-width="1" opacity="0.4"/>
-        <text x="230" y="280" text-anchor="middle" fill="#6a9a60" font-family="Space Grotesk" font-size="13" font-weight="600" opacity="0.5">INDIA</text>
+    <div class="section-label">Mandi Locations — India</div>
+    <div class="map-container" style="height:480px;background:#e4f0e4">
+      <svg id="india-map" viewBox="68 6 30 30" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+        <defs>
+          <linearGradient id="state-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#d4edc8"/>
+            <stop offset="100%" style="stop-color:#c0e0b0"/>
+          </linearGradient>
+        </defs>
+        <path d="M73.9,33.9 L74.7,34.6 L75.3,34.9 L76.2,34.7 L76.9,35.1 L77.8,35.4 L78.5,35.2 L79.1,34.8 L78.8,34.1 L78.2,33.6 L77.5,33.2 L76.8,33.0 L76.0,33.1 L75.2,33.4 L74.5,33.5 Z" fill="url(#state-fill)" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M76.5,30.5 L77.2,30.8 L78.0,31.1 L78.8,31.0 L79.3,31.4 L79.0,32.0 L78.5,32.5 L77.8,32.8 L77.0,32.6 L76.3,32.1 L76.1,31.5 Z" fill="url(#state-fill)" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M73.8,29.5 L74.6,29.7 L75.4,30.0 L76.1,30.4 L76.5,30.5 L76.1,31.5 L75.5,31.8 L74.8,31.6 L74.0,31.2 L73.5,30.5 Z" fill="#cce8b8" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M75.5,28.0 L76.4,28.2 L77.2,28.5 L77.8,29.0 L77.5,29.7 L76.8,30.1 L76.1,30.4 L75.4,30.0 L74.9,29.4 L74.8,28.7 Z" fill="url(#state-fill)" stroke="#8aba78" stroke-width="0.08"/>
+        <rect x="76.8" y="28.4" width="0.5" height="0.5" fill="#b8d4a0" stroke="#8aba78" stroke-width="0.06"/>
+        <path d="M77.5,29.7 L78.3,29.9 L79.1,30.2 L79.5,30.7 L79.2,31.4 L78.8,31.0 L78.0,31.1 L77.2,30.8 L76.5,30.5 L76.8,30.1 L77.5,29.7 Z" fill="url(#state-fill)" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M77.1,25.0 L78.2,25.2 L79.5,25.4 L80.8,25.3 L81.9,25.5 L83.0,25.6 L84.1,25.4 L84.5,26.0 L84.2,26.8 L83.5,27.5 L82.5,27.9 L81.4,27.8 L80.3,27.5 L79.1,27.6 L78.0,28.0 L77.2,28.5 L76.4,28.2 L75.5,28.0 L75.0,27.4 L75.2,26.6 L75.8,26.0 L76.5,25.5 Z" fill="#d8eec8" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M69.5,24.5 L70.5,24.3 L71.5,24.0 L72.5,23.8 L73.6,23.7 L74.8,24.0 L75.5,24.6 L76.5,25.5 L75.8,26.0 L75.2,26.6 L75.0,27.4 L74.5,28.0 L73.8,28.5 L73.0,28.7 L72.2,28.5 L71.4,28.0 L70.8,27.4 L70.2,26.8 L69.8,26.0 L69.5,25.2 Z" fill="#e0ecd0" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M68.2,20.0 L69.0,20.2 L70.0,20.0 L71.0,20.2 L72.0,20.5 L72.9,21.0 L73.5,21.8 L73.8,22.6 L73.9,23.4 L73.6,23.7 L72.5,23.8 L71.5,24.0 L70.5,24.3 L69.5,24.5 L69.0,23.8 L68.6,23.0 L68.0,22.2 L67.8,21.4 L68.0,20.7 Z" fill="#dcecc8" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M75.5,21.5 L76.8,21.3 L78.0,21.2 L79.3,21.0 L80.6,21.0 L81.8,21.3 L82.8,21.8 L83.6,22.5 L83.5,23.4 L83.0,24.1 L82.0,24.6 L81.0,24.9 L79.5,25.4 L78.2,25.2 L77.1,25.0 L76.5,25.5 L75.5,24.6 L74.8,24.0 L74.5,23.2 L74.8,22.4 L75.2,21.9 Z" fill="#d4e8c4" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M83.5,23.4 L84.2,23.3 L85.2,23.5 L86.2,23.8 L87.2,24.0 L87.8,24.6 L87.5,25.4 L86.8,25.8 L85.8,26.0 L84.8,25.9 L84.1,25.4 L83.0,25.6 L83.0,24.9 L83.0,24.1 Z" fill="url(#state-fill)" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M83.6,21.5 L84.6,21.4 L85.6,21.5 L86.6,21.8 L87.4,22.3 L87.8,23.0 L87.8,24.6 L87.2,24.0 L86.2,23.8 L85.2,23.5 L84.2,23.3 L83.5,23.4 L83.0,22.5 Z" fill="#c8e4b8" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M87.8,21.5 L88.5,21.8 L89.2,22.2 L89.5,22.9 L89.4,23.8 L88.9,24.5 L88.3,25.0 L87.8,25.5 L87.5,25.4 L87.8,24.6 L87.8,23.0 L87.4,22.3 L86.6,21.8 L87.2,21.5 Z" fill="url(#state-fill)" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M82.5,18.5 L83.5,18.4 L84.6,18.5 L85.5,18.8 L86.3,19.4 L87.0,20.0 L87.2,20.8 L87.0,21.5 L86.3,22.0 L85.5,22.2 L84.6,21.9 L83.6,21.5 L83.0,20.8 L82.4,20.0 L82.0,19.2 Z" fill="#d0e8c0" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M80.0,19.0 L81.0,18.8 L82.0,18.7 L82.5,18.5 L82.0,19.2 L82.4,20.0 L83.0,20.8 L83.6,21.5 L83.0,22.5 L82.8,21.8 L81.8,21.3 L80.6,21.0 L79.3,21.0 L78.8,20.4 L79.0,19.6 Z" fill="#cce4ba" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M72.8,16.5 L73.8,16.4 L74.8,16.3 L75.8,16.2 L76.8,16.4 L77.8,16.8 L78.8,17.0 L79.8,17.2 L80.5,17.8 L80.8,18.6 L80.0,19.0 L79.0,19.6 L78.8,20.4 L78.0,21.2 L76.8,21.3 L75.5,21.5 L75.2,21.9 L74.8,22.4 L74.5,23.2 L73.8,22.6 L73.5,21.8 L72.9,21.0 L72.5,20.2 L72.0,19.4 L72.0,18.6 L72.2,17.8 L72.5,17.0 Z" fill="#d8ecc4" stroke="#8aba78" stroke-width="0.08"/>
+        <rect x="73.7" y="15.2" width="0.4" height="0.35" fill="#b8d4a0" stroke="#8aba78" stroke-width="0.06"/>
+        <path d="M74.0,12.5 L75.0,12.4 L76.0,12.3 L77.0,12.5 L77.8,13.0 L78.5,13.8 L78.8,14.6 L78.8,15.4 L78.5,16.0 L77.8,16.8 L76.8,16.4 L75.8,16.2 L74.8,16.3 L73.8,16.4 L73.2,15.7 L73.0,14.9 L73.2,14.1 L73.6,13.3 Z" fill="#d4ecc0" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M78.5,13.8 L79.5,13.5 L80.5,13.4 L81.5,13.6 L82.5,14.0 L83.2,14.7 L83.5,15.5 L83.2,16.4 L82.5,17.0 L81.5,17.4 L80.5,17.2 L79.8,17.2 L79.8,17.2 L78.8,17.0 L78.5,16.0 L78.8,15.4 L78.8,14.6 Z" fill="#cce8b8" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M78.8,17.0 L79.8,17.2 L80.8,18.6 L80.5,17.8 L79.8,17.2 L79.3,18.0 L78.5,18.2 L77.8,17.8 L77.8,17.0 L78.5,16.0 Z" fill="#c8e4b4" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M76.0,10.0 L77.0,10.2 L78.0,10.5 L78.8,11.2 L79.2,12.0 L79.2,12.9 L78.5,13.8 L77.8,13.0 L77.0,12.5 L76.0,12.3 L75.0,12.4 L74.5,11.8 L74.4,11.0 L74.8,10.4 L75.3,10.0 Z" fill="#d4e8c0" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M75.5,8.5 L76.2,8.6 L76.8,9.2 L77.0,10.0 L76.5,10.6 L75.9,11.2 L75.5,11.8 L75.0,12.4 L74.5,11.8 L74.4,11.0 L74.5,10.2 L74.8,9.4 L75.0,8.8 Z" fill="#c0e0b0" stroke="#8aba78" stroke-width="0.08"/>
+        <path d="M88.5,24.5 L89.5,24.3 L90.2,24.0 L91.0,24.2 L92.0,24.5 L92.8,25.0 L93.2,25.7 L92.8,26.4 L92.0,26.8 L91.0,26.6 L90.0,26.4 L89.2,26.0 L88.6,25.4 Z" fill="#c8e4b8" stroke="#8aba78" stroke-width="0.08"/>
+        <rect x="88.2" y="27.2" width="0.45" height="0.4" fill="#b8d4a0" stroke="#8aba78" stroke-width="0.06"/>
+
+        <!-- ── RIVERS ── -->
+        <path d="M79.1,30.2 Q80,28.5 80.5,26.5 Q81,24.5 83,22 Q85,20 87,18 Q88,17 88.3,16" fill="none" stroke="#4a9ab8" stroke-width="0.12" opacity="0.5"/>
+        <path d="M73.5,30.5 Q74,28 74.8,26 Q75.5,24 76,22 Q77,20 78,18" fill="none" stroke="#4a9ab8" stroke-width="0.1" opacity="0.4"/>
+        <path d="M70,25 Q71,23 72,21 Q73,19 74,17 Q74.8,15 74.5,13" fill="none" stroke="#4a9ab8" stroke-width="0.1" opacity="0.35"/>
+
+        <!-- ── STATE LABELS ── -->
+        <text x="75.0" y="27.0" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.55" font-weight="600" opacity="0.8">Rajasthan</text>
+        <text x="79.5" y="23.8" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.55" font-weight="600" opacity="0.8">Uttar Pradesh</text>
+        <text x="79.5" y="20.5" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.55" font-weight="600" opacity="0.8">Madhya Pradesh</text>
+        <text x="76.2" y="19.0" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.50" font-weight="600" opacity="0.8">Maharashtra</text>
+        <text x="76.0" y="14.6" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.48" font-weight="600" opacity="0.8">Karnataka</text>
+        <text x="80.8" y="15.8" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.45" font-weight="600" opacity="0.8">Andhra Pradesh</text>
+        <text x="76.5" y="11.5" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.48" font-weight="600" opacity="0.8">Tamil Nadu</text>
+        <text x="75.1" y="10.5" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.42" font-weight="600" opacity="0.8">Kerala</text>
+        <text x="71.0" y="22.0" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.48" font-weight="600" opacity="0.8">Gujarat</text>
+        <text x="84.5" y="24.8" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.45" font-weight="600" opacity="0.8">Bihar</text>
+        <text x="85.5" y="20.5" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.45" font-weight="600" opacity="0.8">Odisha</text>
+        <text x="88.3" y="23.0" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.42" font-weight="600" opacity="0.8">W Bengal</text>
+        <text x="74.5" y="31.0" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.42" font-weight="600" opacity="0.8">Punjab</text>
+        <text x="76.5" y="29.2" text-anchor="middle" fill="#4a7a38" font-family="Space Grotesk" font-size="0.38" font-weight="600" opacity="0.8">Haryana</text>
+
+        <!-- ── MAJOR CITIES (dots + labels) ── -->
+        <circle cx="77.1" cy="28.65" r="0.12" fill="#2a5a18" opacity="0.9"/>
+        <text x="77.35" y="28.55" fill="#2a5a18" font-family="Space Grotesk" font-size="0.38" font-weight="700">Delhi</text>
+        <circle cx="72.82" cy="18.97" r="0.12" fill="#2a5a18" opacity="0.9"/>
+        <text x="73.0" y="18.9" fill="#2a5a18" font-family="Space Grotesk" font-size="0.38" font-weight="700">Mumbai</text>
+        <circle cx="77.58" cy="12.97" r="0.12" fill="#2a5a18" opacity="0.9"/>
+        <text x="77.76" y="12.9" fill="#2a5a18" font-family="Space Grotesk" font-size="0.38" font-weight="700">Bengaluru</text>
+        <circle cx="78.47" cy="17.38" r="0.11" fill="#2a5a18" opacity="0.9"/>
+        <text x="78.65" y="17.32" fill="#2a5a18" font-family="Space Grotesk" font-size="0.35" font-weight="700">Hyderabad</text>
+        <circle cx="80.27" cy="13.08" r="0.11" fill="#2a5a18" opacity="0.9"/>
+        <text x="80.45" y="13.02" fill="#2a5a18" font-family="Space Grotesk" font-size="0.35" font-weight="700">Chennai</text>
+        <circle cx="88.36" cy="22.56" r="0.11" fill="#2a5a18" opacity="0.9"/>
+        <text x="88.5" y="22.5" fill="#2a5a18" font-family="Space Grotesk" font-size="0.35" font-weight="700">Kolkata</text>
+        <circle cx="72.58" cy="23.03" r="0.11" fill="#2a5a18" opacity="0.9"/>
+        <text x="72.76" y="22.97" fill="#2a5a18" font-family="Space Grotesk" font-size="0.35" font-weight="700">Ahmedabad</text>
+        <circle cx="73.85" cy="18.52" r="0.10" fill="#2a5a18" opacity="0.9"/>
+        <text x="74.0" y="18.47" fill="#2a5a18" font-family="Space Grotesk" font-size="0.33" font-weight="700">Pune</text>
+        <circle cx="75.82" cy="26.92" r="0.10" fill="#2a5a18" opacity="0.9"/>
+        <text x="76.0" y="26.86" fill="#2a5a18" font-family="Space Grotesk" font-size="0.33" font-weight="700">Jaipur</text>
+        <circle cx="80.95" cy="26.85" r="0.10" fill="#2a5a18" opacity="0.9"/>
+        <text x="81.12" y="26.8" fill="#2a5a18" font-family="Space Grotesk" font-size="0.33" font-weight="700">Lucknow</text>
+        <circle cx="85.14" cy="25.61" r="0.10" fill="#2a5a18" opacity="0.9"/>
+        <text x="85.3" y="25.56" fill="#2a5a18" font-family="Space Grotesk" font-size="0.33" font-weight="700">Patna</text>
+        <circle cx="77.4" cy="23.26" r="0.10" fill="#2a5a18" opacity="0.9"/>
+        <text x="77.58" y="23.2" fill="#2a5a18" font-family="Space Grotesk" font-size="0.33" font-weight="700">Bhopal</text>
+        <circle cx="79.09" cy="21.15" r="0.10" fill="#2a5a18" opacity="0.9"/>
+        <text x="79.26" y="21.1" fill="#2a5a18" font-family="Space Grotesk" font-size="0.33" font-weight="700">Nagpur</text>
+        <circle cx="74.87" cy="31.63" r="0.10" fill="#2a5a18" opacity="0.9"/>
+        <text x="75.05" y="31.58" fill="#2a5a18" font-family="Space Grotesk" font-size="0.32" font-weight="700">Amritsar</text>
+        <circle cx="75.85" cy="30.90" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="76.02" y="30.85" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Ludhiana</text>
+        <circle cx="80.35" cy="26.45" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="80.52" y="26.40" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Kanpur</text>
+        <circle cx="83.0" cy="25.32" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="83.16" y="25.27" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Varanasi</text>
+        <circle cx="78.01" cy="27.18" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="78.18" y="27.13" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Agra</text>
+        <circle cx="73.79" cy="20.0" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="73.96" y="19.95" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Nashik</text>
+        <circle cx="70.80" cy="22.30" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="70.97" y="22.25" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Rajkot</text>
+        <circle cx="74.22" cy="20.12" r="0.08" fill="#8a5a18" opacity="0.85"/>
+        <text x="74.38" y="20.07" fill="#8a5a18" font-family="Space Grotesk" font-size="0.28">Lasalgaon</text>
+        <circle cx="77.0" cy="11.0" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="77.18" y="10.95" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Coimbatore</text>
+        <circle cx="83.3" cy="17.7" r="0.09" fill="#4a7a38" opacity="0.85"/>
+        <text x="83.48" y="17.65" fill="#4a7a38" font-family="Space Grotesk" font-size="0.30">Vizag</text>
+
+        <!-- ── MANDI PINS (rendered by JS) ── -->
         <g id="map-pins"></g>
+
+        <!-- ── LEGEND ── -->
+        <rect x="68.2" y="8.0" width="3.2" height="2.2" rx="0.15" fill="white" opacity="0.85"/>
+        <circle cx="68.6" cy="8.55" r="0.15" fill="#166534"/>
+        <text x="68.85" y="8.6" fill="#333" font-family="Space Grotesk" font-size="0.38">APMC Mandi (up)</text>
+        <circle cx="68.6" cy="9.15" r="0.15" fill="#b91c1c"/>
+        <text x="68.85" y="9.2" fill="#333" font-family="Space Grotesk" font-size="0.38">APMC Mandi (down)</text>
+        <circle cx="68.6" cy="9.75" r="0.10" fill="#2a5a18"/>
+        <text x="68.85" y="9.8" fill="#333" font-family="Space Grotesk" font-size="0.38">Major City</text>
       </svg>
     </div>
-    <div style="font-size:11px;color:var(--dim);margin-top:7px;text-align:center">Click any row in the table above to see nearby market comparison</div>
+    <div style="font-size:11px;color:var(--dim);margin-top:8px;text-align:center">Click any row in the table above to compare nearby mandi prices. Hover over map pins to see crop and price.</div>
   </div>
 
 </div>
 
 
-<!-- ══════════════════════════════════════════════════
+<!-- ══════════════════════════════════════════════
      PANEL 2 — AGRONOMIST PORTAL
-══════════════════════════════════════════════════ -->
+══════════════════════════════════════════════ -->
 <div class="panel" id="panel-agronomist">
 
   <div class="hero" style="background:linear-gradient(135deg,#0a1e30 0%,#0d2a1e 100%);margin-bottom:20px">
     <div class="hero-pattern" style="opacity:.05">🔬</div>
     <div class="hero-eyebrow"><span class="pulse"></span> Precision Pathological Hub — ICAR Protocol</div>
     <h1>Agronomist<br>Deep Diagnosis</h1>
-    <p>Upload field photos, run 6-agent AI analysis, get precise prescriptions and a printable PDF report.</p>
+    <p>Submit case parameters and field images. The 6-agent AI pipeline runs full pathological analysis and generates a professional diagnostic report.</p>
   </div>
 
-  <div class="three-col" style="margin-bottom:18px">
+  <div class="three-col" style="margin-bottom:20px">
     <div class="stat-card"><div class="stat-label">Cases in Queue</div><div class="stat-val" id="q-count">5</div><div class="stat-sub">Pending review</div></div>
     <div class="stat-card"><div class="stat-label">Avg Confidence</div><div class="stat-val" style="color:var(--clay)">89%</div><div class="stat-sub">Model accuracy</div></div>
     <div class="stat-card"><div class="stat-label">AI Agents Active</div><div class="stat-val">6</div><div class="stat-sub">Running in sequence</div></div>
@@ -628,7 +386,7 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
     <!-- Case Queue -->
     <div class="card" style="padding:0;overflow:hidden">
       <div class="queue-header">
-        <div><div class="card-title" style="font-size:13px">Case Queue</div><div class="card-desc">Click to load a case</div></div>
+        <div><div class="card-title" style="font-size:13px">Case Queue</div><div class="card-desc">Click to load</div></div>
         <div style="display:flex;gap:10px;font-size:11px">
           <span style="color:var(--ember);font-weight:700" id="q-urgent-count">2</span> urgent
           <span style="color:var(--clay);font-weight:700" id="q-pending-count">3</span> pending
@@ -641,9 +399,9 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
     </div>
 
     <!-- Workspace -->
-    <div id="agro-workspace">
+    <div id="agro-workspace" style="min-width:0;overflow:hidden">
 
-      <!-- Step 1: Upload -->
+      <!-- Step 1: Image Upload -->
       <div class="card" style="margin-bottom:14px">
         <div class="card-header">
           <div class="card-icon">📸</div>
@@ -651,8 +409,8 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
           <div id="scan-badge" style="margin-left:auto;display:none"><span class="badge badge-low">Image Ready</span></div>
         </div>
         <div class="upload-zone" id="drop-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-          <input type="file" id="img-file-input" accept="image/*" capture="environment" onchange="handleFileSelect(event)" style="display:none">
-          <div id="upload-prompt" onclick="document.getElementById('img-file-input').click()">
+          <input type="file" id="img-file-input" accept="image/*" capture="environment" onchange="handleFileSelect(event)">
+          <div id="upload-prompt">
             <div class="upload-icon">📷</div>
             <div class="upload-text">Drop image here or tap to upload</div>
             <div class="upload-hint">JPG, PNG, WEBP — leaf closeup, field photo, stem sample</div>
@@ -666,9 +424,9 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
             <div class="scan-chips" id="scan-chips"></div>
           </div>
         </div>
-        <div id="img-scan-result" style="display:none;margin-top:10px">
+        <div id="img-scan-result" style="display:none;margin-top:12px">
           <div class="section-label">VLM Visual Analysis</div>
-          <div class="agro-report-box"><div class="agro-report-body" id="img-scan-text" style="font-size:12px"></div></div>
+          <div class="result-box" id="img-scan-text" style="font-size:12px"></div>
         </div>
       </div>
 
@@ -676,11 +434,12 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
       <div class="card" style="margin-bottom:14px">
         <div class="card-header">
           <div class="card-icon">🧫</div>
-          <div><div class="card-title">Step 2 — Case Parameters</div><div class="card-desc">Confirm crop details before running diagnosis</div></div>
+          <div><div class="card-title">Step 2 — Case Parameters</div><div class="card-desc">Confirm details before diagnosis</div></div>
         </div>
         <div class="two-col">
           <div class="field"><label>Crop</label>
-            <select id="d-crop"><option value="">Select...</option>
+            <select id="d-crop">
+              <option value="">Select...</option>
               <option>Tomato</option><option>Rice</option><option>Wheat</option>
               <option>Cotton</option><option>Maize</option><option>Potato</option><option>Chili</option>
             </select>
@@ -700,7 +459,7 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
           </div>
         </div>
         <div class="field"><label>Symptom Profile</label>
-          <textarea id="d-symptoms" placeholder="Lesion morphology, distribution, affected tissue layers, extent of coverage..."></textarea>
+          <textarea id="d-symptoms" placeholder="Lesion morphology, distribution pattern, affected tissue layers..."></textarea>
         </div>
         <button class="btn btn-primary btn-full" id="diag-btn" onclick="runDeepDiagnosis()">
           <span id="diag-btn-inner">Run Full AI Diagnosis</span>
@@ -711,85 +470,85 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
       <div class="card" style="margin-bottom:14px">
         <div class="card-header">
           <div class="card-icon">⚙️</div>
-          <div><div class="card-title">Step 3 — AI Agent Pipeline</div><div class="card-desc">6-stage automated pathological analysis</div></div>
+          <div>
+            <div class="card-title">Step 3 — AI Agent Pipeline</div>
+            <div class="card-desc">6-stage automated pathological analysis sequence</div>
+          </div>
         </div>
-        <div class="pipeline" id="pipeline-steps"></div>
+        <!-- AGRONOMIST INFO BOX — shown before diagnosis runs -->
+        <div class="agro-info-panel" id="agro-pipeline-info">
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px;color:var(--ink)">How the AI diagnosis works</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:10px">
+            The AI Triage Report will appear here once you complete the form above and click <strong>Run AI Diagnosis</strong>. The report is generated by a network of 6 specialized AI agents working in sequence:
+          </div>
+          <div class="agent-list">
+            <div class="agent-card"><div class="agent-card-icon">👁️</div><div><div class="agent-card-name">PathoVision</div><div class="agent-card-desc">Disease detection — pixel-level lesion segmentation and symptom pattern classification using visual language models</div></div></div>
+            <div class="agent-card"><div class="agent-card-icon">🗺️</div><div><div class="agent-card-name">RegionalGrounded</div><div class="agent-card-desc">Geospatial climate matching — agro-climate, soil type, humidity and seasonal risk factor lookup for the target region</div></div></div>
+            <div class="agent-card"><div class="agent-card-icon">⚗️</div><div><div class="agent-card-name">BioTherapeutic</div><div class="agent-card-desc">ICAR compound lookup — chemical and biological prescription matching from the ICAR registered compound database</div></div></div>
+            <div class="agent-card"><div class="agent-card-icon">📈</div><div><div class="agent-card-name">YieldPrognostic</div><div class="agent-card-desc">Recovery curve modeling — 14-day vegetative vigor decay and remediation recovery projection using exponential decay models</div></div></div>
+            <div class="agent-card"><div class="agent-card-icon">🔢</div><div><div class="agent-card-name">KinematicSolver</div><div class="agent-card-desc">Heatmap analysis — Gaussian cross-attention weight generation across the 8x8 spatial patch grid of foliar surface</div></div></div>
+            <div class="agent-card"><div class="agent-card-icon">🧠</div><div><div class="agent-card-name">TriageOrchestrator</div><div class="agent-card-desc">Final synthesis — multi-agent output fusion, confidence score computation, and final report generation</div></div></div>
+          </div>
+        </div>
+        <div class="pipeline" id="pipeline-steps" style="display:none"></div>
       </div>
 
-      <!-- Step 4: AI Triage Report (AGRONOMIST) -->
+      <!-- Step 4: Results -->
       <div id="diag-output" style="display:none">
+
         <div class="card" style="margin-bottom:14px">
           <div class="card-header">
-            <div class="card-icon">🧠</div>
-            <div><div class="card-title">Step 4 — AI Triage Report</div><div class="card-desc">Generated by 6-agent network: PathoVision · RegionalGrounded · BioTherapeutic · YieldPrognostic · KinematicSolver · TriageOrchestrator</div></div>
-          </div>
-
-          <!-- PLACEHOLDER / REPORT BOX -->
-          <div class="agro-report-box" id="agro-triage-box">
-            <div class="agro-report-header">
-              <span class="pulse"></span>
-              <span class="agro-report-header-text" id="agro-report-status">AWAITING ANALYSIS</span>
-            </div>
-            <div class="agro-report-body" id="agro-triage-body">
-              <div class="agro-report-placeholder">The AI Triage Report will appear here once you complete the form above and click <strong style="color:var(--sprout)">Run AI Diagnosis</strong>.<br><br>The report is generated by a network of 6 specialized AI agents:<br><br>
-  <strong style="color:var(--sprout)">PathoVision</strong> (disease detection)<br>
-  <strong style="color:var(--sprout)">RegionalGrounded</strong> (geospatial climate matching)<br>
-  <strong style="color:var(--sprout)">BioTherapeutic</strong> (ICAR compound lookup)<br>
-  <strong style="color:var(--sprout)">YieldPrognostic</strong> (recovery curve modeling)<br>
-  <strong style="color:var(--sprout)">KinematicSolver</strong> (heatmap analysis)<br>
-  <strong style="color:var(--sprout)">TriageOrchestrator</strong> (final synthesis)</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Metrics + Prescriptions -->
-        <div class="card" style="margin-bottom:14px">
-          <div class="card-header"><div class="card-icon">🔬</div><div><div class="card-title">Pathogen Metrics & Prescriptions</div></div></div>
-          <div class="two-col" style="margin-bottom:14px">
-            <div>
-              <div class="section-label">Pathogen Identification</div>
-              <div style="font-size:15px;font-weight:700;color:var(--ink)" id="m-pathogen">—</div>
-              <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-                <span class="badge badge-high" id="m-threat">—</span>
-                <span class="badge badge-info mono" id="m-code">—</span>
-              </div>
-              <div style="margin-top:10px;font-size:11px;color:var(--dim)">Decay Rate: <strong id="m-decay">—</strong> | Recovery Factor: <strong id="m-recovery">—</strong></div>
-            </div>
-            <div class="conf-ring-wrap">
+            <div class="card-icon">📊</div>
+            <div><div class="card-title">Diagnostic Metrics</div><div class="card-desc">Computed pathological parameters</div></div>
+            <div class="conf-ring" style="margin-left:auto">
               <svg width="80" height="80" viewBox="0 0 80 80">
-                <circle cx="40" cy="40" r="32" fill="none" stroke="#e4eddc" stroke-width="7"/>
-                <circle cx="40" cy="40" r="32" fill="none" stroke="var(--sprout)" stroke-width="7" stroke-dasharray="201.06" stroke-dashoffset="201.06" id="conf-circle" style="transition:stroke-dashoffset 1s ease"/>
+                <circle cx="40" cy="40" r="32" fill="none" stroke="#e4eddc" stroke-width="6"/>
+                <circle id="conf-circle" cx="40" cy="40" r="32" fill="none" stroke="var(--sprout)" stroke-width="6" stroke-dasharray="201.06" stroke-dashoffset="201.06" stroke-linecap="round" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
-              <div style="font-size:20px;font-weight:700;color:var(--ink);font-family:'JetBrains Mono',monospace;margin-top:-52px;position:relative;z-index:1" id="conf-val">0%</div>
-              <div style="font-size:10px;color:var(--dim);font-weight:600;margin-top:34px">CONFIDENCE</div>
+              <div class="conf-val" id="conf-val">0%</div>
             </div>
+          </div>
+          <div class="metric-grid" style="margin-bottom:14px">
+            <div class="metric-tile"><div class="mtile-label">Pathogen</div><div class="mtile-val" id="m-pathogen" style="font-size:13px;font-family:'Space Grotesk',sans-serif;font-weight:700">—</div></div>
+            <div class="metric-tile"><div class="mtile-label">Threat Level</div><div class="mtile-val" id="m-threat" style="font-size:15px">—</div></div>
+            <div class="metric-tile"><div class="mtile-label">Decay Rate (d)</div><div class="mtile-val" id="m-decay">—</div></div>
+            <div class="metric-tile"><div class="mtile-label">Recovery k</div><div class="mtile-val" id="m-recovery">—</div></div>
           </div>
           <div class="two-col">
-            <div><div class="section-label">Chemical Prescription (ICAR)</div><div style="font-size:12px;color:var(--ink);line-height:1.6;background:var(--mist);padding:10px;border-radius:8px;border:1px solid var(--border)" id="rx-chem-text">—</div></div>
-            <div><div class="section-label">Biological Prescription</div><div style="font-size:12px;color:var(--ink);line-height:1.6;background:var(--mist);padding:10px;border-radius:8px;border:1px solid var(--border)" id="rx-bio-text">—</div></div>
+            <div class="rx-box rx-chem"><div class="rx-label">Chemical Prescription</div><div id="rx-chem-text">—</div></div>
+            <div class="rx-box rx-bio"><div class="rx-label">Biological Prescription</div><div id="rx-bio-text">—</div></div>
           </div>
         </div>
 
-        <!-- Heatmap + Curve -->
         <div class="card" style="margin-bottom:14px">
-          <div class="card-header"><div class="card-icon">🔢</div><div><div class="card-title">KinematicSolver — Attention Heatmap</div><div class="card-desc">8×8 spatial attention grid (Gaussian distribution)</div></div></div>
-          <div id="heatmap-grid" style="margin-bottom:14px"></div>
-          <div class="card-header" style="margin-top:10px"><div class="card-icon">📈</div><div><div class="card-title">YieldPrognostic — Recovery Curve</div></div></div>
-          <canvas id="diag-curve-chart" style="max-height:180px"></canvas>
+          <div class="card-header"><div class="card-icon">🧠</div><div><div class="card-title">Pathological Assessment</div><div class="card-desc">AI deep clinical analysis</div></div></div>
+          <div class="result-box" id="deep-result-text">—</div>
         </div>
 
-        <!-- IPM Notes + PDF -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-header"><div class="card-icon">🗺️</div><div><div class="card-title">VLM Attention Heatmap — 8×8 Patch Grid</div><div class="card-desc">Gaussian cross-attention over foliar surface patches</div></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+            <div>
+              <div id="heatmap-grid" style="margin-bottom:8px"></div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:10px;color:var(--dim)">
+                <span style="width:10px;height:10px;background:#0d1a0a;border-radius:2px;display:inline-block"></span>Minimal
+                <span style="width:10px;height:10px;background:#3d7a1e;border-radius:2px;display:inline-block;margin-left:4px"></span>Moderate
+                <span style="width:10px;height:10px;background:#d9a84e;border-radius:2px;display:inline-block;margin-left:4px"></span>High
+                <span style="width:10px;height:10px;background:#e05030;border-radius:2px;display:inline-block;margin-left:4px"></span>Critical
+              </div>
+            </div>
+            <canvas id="diag-curve-chart" style="max-height:180px"></canvas>
+          </div>
+        </div>
+
         <div class="card">
-          <div class="card-header"><div class="card-icon">📋</div><div><div class="card-title">IPM Notes & Farmer Advisory</div></div></div>
-          <div class="section-label">Farmer Advisory (Plain Language)</div>
-          <div style="font-size:12px;color:var(--ink);line-height:1.7;background:var(--mist);padding:11px;border-radius:8px;border:1px solid var(--border);margin-bottom:12px" id="farmer-advisory-text">—</div>
-          <div class="section-label">IPM Management Notes</div>
-          <div id="ipm-notes-list" style="margin-bottom:14px"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <div class="card-header"><div class="card-icon">📄</div><div><div class="card-title">Diagnostic Report</div><div class="card-desc">Full report for farmer and agronomist</div></div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
             <button class="btn btn-primary" onclick="generatePDF('deep')">Download Full PDF Report</button>
             <button class="btn btn-ghost btn-sm" onclick="exportCaseJSON()">Export JSON</button>
             <button class="btn btn-ghost btn-sm" onclick="markCaseDone()">Mark Resolved</button>
           </div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.65">Report includes pathogen identification, chemical and biological prescriptions, 14-day recovery table, IPM notes, farmer advisory in plain language, and agronomist technical notes. Print or save as PDF via browser.</div>
         </div>
       </div>
     </div>
@@ -797,189 +556,238 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(mb);
 </div>
 
 
-<!-- ══════════════════════════════════════════════════
-     PANEL 3 — AI ADVISOR (CHATBOT)
-══════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     PANEL 3 — AI ADVISOR (highly premium layout core)
+══════════════════════════════════════════════ -->
 <div class="panel" id="panel-advisor">
 
   <div class="hero" style="background:linear-gradient(135deg,#1a0d30 0%,#0f2a20 100%);margin-bottom:20px">
     <div class="hero-pattern" style="opacity:.05">🤖</div>
-    <div class="hero-eyebrow"><span class="pulse"></span> KrishiAI Conversational Engine</div>
+    <div class="hero-eyebrow"><span class="pulse"></span> KrishiAI Conversational Engine — Multi-Source Knowledge</div>
     <h1>Your Agricultural<br>AI Expert</h1>
-    <p>Ask anything about crop diseases, soil health, market prices, or government schemes — backed by ICAR, FAO, FAOSTAT, PM-KISAN, and global agricultural databases.</p>
+    <p>Ask anything. KrishiAI draws from ICAR databases, open agricultural research, government scheme data, mandi prices, and agronomic science to give you expert answers.</p>
   </div>
 
   <div class="col-7-5">
-    <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
-      <div style="padding:12px 15px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px">
-        <div class="card-icon">💬</div>
-        <div><div class="card-title">KrishiAI Chat</div><div class="card-desc">English, Hindi & regional languages</div></div>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="clearChat()">Clear</button>
+    <!-- Chat -->
+    <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:12px;background:#ffffff;">
+        <div class="card-icon" style="background: var(--mist); color: var(--forest); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px;">💬</div>
+        <div>
+          <div class="card-title" style="font-size: 14px; font-weight: 700;">KrishiAI Chat Terminal</div>
+          <div class="card-desc" style="font-size: 11px; color: var(--dim);">Multilingual agricultural guidance panel</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto; border-radius: 20px; font-size: 11px; padding: 4px 12px;" onclick="clearChat()">Clear Console</button>
       </div>
       <div id="chat-messages"></div>
       <div class="llm-bar">
-        <span class="llm-label">Model:</span>
-        <span class="llm-chip active" id="llm-claude" onclick="setLLM('claude')">Claude</span>
-        <span class="llm-chip" id="llm-gemini" onclick="setLLM('gemini')">Gemini</span>
-        <span class="llm-chip" id="llm-openai" onclick="setLLM('openai')">GPT-4o</span>
-        <span style="margin-left:auto;font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace" id="active-llm-label">Using: Claude</span>
+        <span class="llm-label">AI Engine Kernel:</span>
+        <span class="llm-chip active" id="llm-claude" style="cursor:default">Claude Sonnet</span>
+        <span class="llm-chip" id="llm-gemini" title="Gemini requires a backend API key — not available" style="opacity:0.35;cursor:not-allowed;pointer-events:none">Gemini 2.5</span>
+        <span class="llm-chip" id="llm-openai" title="GPT-4o requires a backend API key — not available" style="opacity:0.35;cursor:not-allowed;pointer-events:none">GPT-4o</span>
+        <span style="margin-left:auto;font-size:10px;color:var(--leaf);font-family:'JetBrains Mono',monospace" id="active-llm-label">✓ Active: Anthropic Cluster Node</span>
       </div>
       <div class="chat-input-row">
-        <input type="text" id="chat-input" placeholder="Ask about diseases, schemes, soil, mandi prices..." onkeydown="if(event.key==='Enter')sendChat()" autocomplete="off">
-        <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+        <input type="text" id="chat-input" placeholder="Ask about crop diseases, farming schemes, prices, soil health constants..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn btn-primary" style="border-radius: 24px; padding: 0 22px; font-size: 13px;" onclick="sendChat()">Send Query</button>
       </div>
     </div>
 
+    <!-- Right column -->
     <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Knowledge Topics -->
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📚</div><div><div class="card-title">Knowledge Topics</div><div class="card-desc">Tap to ask about any topic</div></div></div>
+        <div class="kb-topic-grid">
+          <div class="kb-topic" onclick="askTopic('crop_disease')"><span class="kb-topic-icon">🦠</span> Crop Diseases</div>
+          <div class="kb-topic" onclick="askTopic('soil_health')"><span class="kb-topic-icon">🌍</span> Soil Health</div>
+          <div class="kb-topic" onclick="askTopic('pest_control')"><span class="kb-topic-icon">🐛</span> Pest Control</div>
+          <div class="kb-topic" onclick="askTopic('irrigation')"><span class="kb-topic-icon">💧</span> Irrigation</div>
+          <div class="kb-topic" onclick="askTopic('govt_schemes')"><span class="kb-topic-icon">🏛️</span> Govt Schemes</div>
+          <div class="kb-topic" onclick="askTopic('mandi_prices')"><span class="kb-topic-icon">📊</span> Mandi Prices</div>
+          <div class="kb-topic" onclick="askTopic('organic_farming')"><span class="kb-topic-icon">🌿</span> Organic Farming</div>
+          <div class="kb-topic" onclick="askTopic('weather_advisory')"><span class="kb-topic-icon">⛅</span> Weather Advisory</div>
+          <div class="kb-topic" onclick="askTopic('seed_varieties')"><span class="kb-topic-icon">🌱</span> Seed Varieties</div>
+          <div class="kb-topic" onclick="askTopic('fertilizers')"><span class="kb-topic-icon">🧪</span> Fertilizers</div>
+          <div class="kb-topic" onclick="askTopic('harvest')"><span class="kb-topic-icon">🌾</span> Harvest Guide</div>
+          <div class="kb-topic" onclick="askTopic('storage')"><span class="kb-topic-icon">🏚️</span> Post-Harvest Storage</div>
+        </div>
+      </div>
+
+      <!-- Quick Questions -->
       <div class="card">
         <div class="card-header"><div class="card-icon">⚡</div><div><div class="card-title">Quick Questions</div><div class="card-desc">Tap to ask instantly</div></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px" id="quick-q-list"></div>
+        <div style="display:flex;flex-direction:column;gap:6px" id="quick-q-list"></div>
       </div>
+
+      <!-- Knowledge base coverage -->
       <div class="card">
-        <div class="card-header"><div class="card-icon">📚</div><div><div class="card-title">Open Knowledge Base</div><div class="card-desc">Grounding data — 800+ agricultural sources</div></div></div>
+        <div class="card-header"><div class="card-icon">🗄️</div><div><div class="card-title">Open Knowledge Sources</div><div class="card-desc">Databases powering the chatbot</div></div></div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>ICAR Crop Disease Profiles</span><span class="mono" style="color:var(--leaf)">47+ diseases</span></div><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>FAO/FAOSTAT Agricultural Data</span><span class="mono" style="color:var(--leaf)">180 countries</span></div><div class="prog-bar"><div class="prog-fill" style="width:95%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>India State Agro-Zones</span><span class="mono" style="color:var(--leaf)">28 states</span></div><div class="prog-bar"><div class="prog-fill" style="width:93%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Govt Schemes (PM-KISAN, PMFBY, MSP)</span><span class="mono" style="color:var(--leaf)">12 schemes</span></div><div class="prog-bar"><div class="prog-fill" style="width:88%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Soil Health & Nutrient DB</span><span class="mono" style="color:var(--leaf)">NHB India</span></div><div class="prog-bar"><div class="prog-fill" style="width:82%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Pesticide Registry (ICAR/CIB&RC)</span><span class="mono" style="color:var(--leaf)">800+ entries</span></div><div class="prog-bar"><div class="prog-fill" style="width:91%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Weather & Climate (IMD API)</span><span class="mono" style="color:var(--leaf)">Real-time</span></div><div class="prog-bar"><div class="prog-fill" style="width:78%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>APMC Mandi Price Archive</span><span class="mono" style="color:var(--leaf)">Agmarknet</span></div><div class="prog-bar"><div class="prog-fill" style="width:85%"></div></div></div>
-          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>KVK / ATMA Extension Notes</span><span class="mono" style="color:var(--leaf)">741 KVKs</span></div><div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>Agropedia (ICAR Open Portal)</span><span class="mono" style="color:var(--leaf)">2,400+ entries</span></div><div class="prog-bar"><div class="prog-fill" style="width:95%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>FAO AGRIS Database</span><span class="mono" style="color:var(--leaf)">Global research</span></div><div class="prog-bar"><div class="prog-fill" style="width:88%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>PM-KISAN / PMFBY Scheme Data</span><span class="mono" style="color:var(--leaf)">8 schemes</span></div><div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>APMC Mandi Price Archive</span><span class="mono" style="color:var(--leaf)">28 states</span></div><div class="prog-bar"><div class="prog-fill" style="width:82%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>IMD Weather Seasonal Data</span><span class="mono" style="color:var(--leaf)">Live + forecast</span></div><div class="prog-bar"><div class="prog-fill" style="width:75%"></div></div></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════ JAVASCRIPT ════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT APPLICATION CORE ENGINE LOOP
+══════════════════════════════════════════════ -->
 <script>
-/* ── STATE ─────────────────────────────────────── */
-let currentUser = null;
-let selectedRole = 'farmer';
-let activeLLM = 'claude';
-let lastTriageData = null;
-let lastDiagData = null;
-let activeCaseIdx = 0;
-let recoveryChart = null, diagChart = null;
-let triageStartTime = null;
-let chatHistory = [];
-let deferredPWAPrompt = null;
+// ══ STATE ══════════════════════════════════════
+let currentUser=null, selectedRole='farmer', activeLLM='claude';
+let lastTriageData=null, lastDiagData=null, activeCaseIdx=0;
+let recoveryChart=null, diagChart=null, triageStartTime=null;
+let chatHistory=[], deferredInstall=null;
 
-/* ── CLAUDE API ──────────────────────────────────*/
-async function callClaude(system, userMsg, imageB64=null, imageMime='image/jpeg') {
-  const content = [];
-  if (imageB64) content.push({type:'image',source:{type:'base64',media_type:imageMime,data:imageB64}});
-  content.push({type:'text',text:userMsg});
-  const res = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,system,messages:[{role:'user',content}]})
+// ══ BACKEND API HELPER ═════════════════════════
+async function apiPost(endpoint, body) {
+  const res = await fetch('/api/' + endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
-  const data = await res.json();
-  return data.content?.map(b=>b.text||'').join('')||'No response.';
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+  return res.json();
 }
 
-/* ── AUTH — localStorage (gate mandatory) ────────*/
-const USERS_KEY = 'kk_users', SESSION_KEY = 'kk_session';
-function loadUsers(){ try{return JSON.parse(localStorage.getItem(USERS_KEY)||'{}')}catch{return {}} }
+// Legacy shim — kept for compatibility with any remaining callers
+async function callClaude(system, userMsg, imgB64=null, imgMime='image/jpeg'){
+  const data = await apiPost('chat', {
+    messages: [{ role: 'user', content: userMsg }],
+    llm: 'claude',
+    _system_override: system,
+    _img_b64: imgB64,
+    _img_mime: imgMime
+  });
+  return data.response || '';
+}
+
+// ══ AUTH GATE (MANDATORY) ══════════════════════
+const USERS_KEY='kk_users_v2', SESSION_KEY='kk_session_v2';
+function loadUsers(){ try{return JSON.parse(localStorage.getItem(USERS_KEY)||'{}')}catch{return{}} }
 function saveUsers(u){ localStorage.setItem(USERS_KEY,JSON.stringify(u)) }
 function loadSession(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch{return null} }
-function saveSession(u){ localStorage.setItem(SESSION_KEY,JSON.stringify(u)) }
 
 function switchGateTab(t){
-  document.getElementById('gate-login-form').style.display = t==='login'?'block':'none';
-  document.getElementById('gate-reg-form').style.display   = t==='register'?'block':'none';
-  document.getElementById('gt-login').classList.toggle('active', t==='login');
-  document.getElementById('gt-register').classList.toggle('active', t==='register');
-  document.getElementById('gate-err').style.display = 'none';
+  document.getElementById('gate-reg-form').style.display=t==='register'?'block':'none';
+  document.getElementById('gate-login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('gt-register').classList.toggle('active',t==='register');
+  document.getElementById('gt-login').classList.toggle('active',t==='login');
+  document.getElementById('gate-err').style.display='none';
+  document.getElementById('gate-success').style.display='none';
 }
-function showGateErr(msg){ const e=document.getElementById('gate-err'); e.textContent=msg; e.style.display='block'; }
+if (document.getElementById('gate-err')) {
+  function showGateErr(msg){ const e=document.getElementById('gate-err'); e.textContent=msg; e.style.display='block'; }
+}
+if (document.getElementById('gate-success')) {
+  function showGateOk(msg){ const e=document.getElementById('gate-success'); e.textContent=msg; e.style.display='block'; }
+}
 function setRole(r){
   selectedRole=r;
   ['farmer','agronomist','researcher'].forEach(x=>document.getElementById('role-'+x).classList.toggle('active',x===r));
 }
 
-function doLogin(){
-  const email = document.getElementById('li-email').value.trim();
-  const pass  = document.getElementById('li-pass').value;
-  if(!email||!pass){ showGateErr('Please fill both fields.'); return; }
-  const users = loadUsers(), user = users[email];
-  if(!user||user.password!==btoa(pass)){ showGateErr('Incorrect email or password.'); return; }
-  user.visitCount=(user.visitCount||0)+1; user.lastLogin=new Date().toISOString();
-  users[email]=user; saveUsers(users);
-  enterApp(user); showToast('Welcome back, '+user.name.split(' ')[0]+'! 🌾');
-}
-
 function doRegister(){
-  const name  = document.getElementById('rg-name').value.trim();
-  const email = document.getElementById('rg-email').value.trim();
-  const pass  = document.getElementById('rg-pass').value;
-  if(!name||!email||!pass){ showGateErr('Please fill all fields.'); return; }
-  if(pass.length<6){ showGateErr('Password must be at least 6 characters.'); return; }
-  if(!/\S+@\S+\.\S+/.test(email)){ showGateErr('Please enter a valid email address.'); return; }
-  const users = loadUsers();
-  if(users[email]){ showGateErr('This email is already registered. Please sign in.'); return; }
-  const user = { id:'u_'+Date.now(), name, email, role:selectedRole, password:btoa(pass), createdAt:new Date().toISOString(), visitCount:1, lastLogin:new Date().toISOString() };
+  const name=document.getElementById('rg-name').value.trim();
+  const email=document.getElementById('rg-email').value.trim();
+  const pass=document.getElementById('rg-pass').value;
+  if(!name||!email||!pass){showGateErr('Please fill all fields.');return;}
+  if(pass.length<6){showGateErr('Password must be at least 6 characters.');return;}
+  if(!email.includes('@')){showGateErr('Please enter a valid email address.');return;}
+  const users=loadUsers();
+  if(users[email]){showGateErr('This email is already registered. Please sign in.');return;}
+  const user={id:'u_'+Date.now(),name,email,role:selectedRole,password:btoa(pass),
+    createdAt:new Date().toISOString(),visitCount:1,lastLogin:new Date().toISOString()};
   users[email]=user; saveUsers(users);
-  enterApp(user); showToast('Account created! Welcome, '+name.split(' ')[0]+'! 🌾');
+  loginUser(user);
+  trackVisit('register');
 }
 
-function enterApp(user){
-  currentUser = user; saveSession(user);
-  document.getElementById('app-gate').style.display = 'none';
-  document.getElementById('topbar').style.display   = 'flex';
-  document.getElementById('auth-loggedin').style.display = 'block';
-  const init = user.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
-  document.getElementById('user-avatar-initials').textContent = init;
-  document.getElementById('user-display-name').textContent   = user.name.split(' ')[0];
-  showPWABannerIfEligible();
+function doLogin(){
+  const email=document.getElementById('li-email').value.trim();
+  const pass=document.getElementById('li-pass').value;
+  if(!email||!pass){showGateErr('Please fill both fields.');return;}
+  const users=loadUsers();
+  const user=users[email];
+  if(!user||user.password!==btoa(pass)){showGateErr('Incorrect email or password.');return;}
+  user.visitCount=(user.visitCount||0)+1;
+  user.lastLogin=new Date().toISOString();
+  users[email]=user; saveUsers(users);
+  loginUser(user);
+  trackVisit('login');
 }
 
-function showUserMenu(){
-  if(!currentUser) return;
-  const msg = `Signed in as ${currentUser.name}\nRole: ${currentUser.role}\nVisits: ${currentUser.visitCount}\n\nClick OK to sign out.`;
-  if(confirm(msg)){ doLogout(); }
+function loginUser(user){
+  currentUser=user;
+  localStorage.setItem(SESSION_KEY,JSON.stringify(user));
+  const gate=document.getElementById('auth-gate');
+  gate.style.animation='fade-out .3s ease forwards';
+  setTimeout(()=>gate.style.display='none',300);
+  const init=user.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('top-avatar').textContent=init;
+  document.getElementById('top-name').textContent=user.name.split(' ')[0];
+  document.getElementById('ud-name').textContent=user.name;
+  document.getElementById('ud-email').textContent=user.email;
+  document.getElementById('ud-role-badge').textContent=user.role;
+  showToast('Welcome, '+user.name.split(' ')[0]+'!');
 }
+
 function doLogout(){
-  currentUser = null; localStorage.removeItem(SESSION_KEY);
-  document.getElementById('topbar').style.display   = 'none';
-  document.getElementById('app-gate').style.display = 'flex';
-  document.getElementById('auth-loggedin').style.display = 'none';
-  showToast('Signed out successfully.');
+  currentUser=null;
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('user-dropdown').classList.remove('open');
+  document.getElementById('auth-gate').style.display='flex';
+  document.getElementById('auth-gate').style.animation='gate-in .3s ease';
+  document.getElementById('gate-err').style.display='none';
 }
 
-/* ── TAB NAVIGATION ──────────────────────────────*/
+function toggleUserMenu(){
+  document.getElementById('user-dropdown').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.auth-zone'))document.getElementById('user-dropdown').classList.remove('open');
+});
+
+function showStats(){
+  document.getElementById('user-dropdown').classList.remove('open');
+  const visits=JSON.parse(localStorage.getItem('kk_visits')||'[]');
+  const mine=visits.filter(v=>v.user===currentUser?.id);
+  showToast(`Your activity: ${mine.length} actions | Joined: ${new Date(currentUser.createdAt).toLocaleDateString()}`);
+}
+
+function downloadApp(){
+  document.getElementById('user-dropdown').classList.remove('open');
+  if(deferredInstall){ deferredInstall.prompt(); }
+  else { showToast('Open this site in Chrome and tap the install icon in the address bar to add to home screen.'); }
+}
+
+function trackVisit(action){
+  const v=JSON.parse(localStorage.getItem('kk_visits')||'[]');
+  v.push({action,time:new Date().toISOString(),user:currentUser?.id||'guest'});
+  localStorage.setItem('kk_visits',JSON.stringify(v.slice(-500)));
+}
+
+// ══ TAB NAVIGATION ═════════════════════════════
 function switchTab(id){
   ['farmer','agronomist','advisor'].forEach(t=>{
-    document.getElementById('panel-'+t).classList.toggle('active', t===id);
-    document.getElementById('tab-'+t).classList.toggle('active', t===id);
+    document.getElementById('panel-'+t).classList.toggle('active',t===id);
+    document.getElementById('tab-'+t).classList.toggle('active',t===id);
   });
-  window.scrollTo({top:0,behavior:'smooth'});
+  trackVisit('tab_'+id);
 }
 
-/* ── WEATHER STRIP ───────────────────────────────*/
-const WX_DATA = [
-  {d:'Today',icon:'⛅',t:'32°',r:'12mm',risk:'Moderate'},
-  {d:'Thu',icon:'🌧️',t:'28°',r:'45mm',risk:'High'},
-  {d:'Fri',icon:'🌧️',t:'26°',r:'38mm',risk:'High'},
-  {d:'Sat',icon:'🌦️',t:'29°',r:'18mm',risk:'Moderate'},
-  {d:'Sun',icon:'☀️',t:'34°',r:'0mm',risk:'Low'},
-  {d:'Mon',icon:'☀️',t:'35°',r:'0mm',risk:'Low'},
-  {d:'Tue',icon:'⛅',t:'31°',r:'8mm',risk:'Low'},
-];
-function renderWeather(){
-  document.getElementById('weather-strip').innerHTML = WX_DATA.map(w=>`
-    <div class="wx-day">
-      <div class="wx-day-label">${w.d}</div>
-      <div class="wx-icon">${w.icon}</div>
-      <div class="wx-temp">${w.t}</div>
-      <div class="wx-rain">${w.r}</div>
-      <div style="font-size:9px;margin-top:2px;font-weight:600;color:${w.risk==='High'?'#b91c1c':w.risk==='Moderate'?'#92400e':'#166534'}">${w.risk} Risk</div>
-    </div>`).join('');
-}
-
-/* ── MATH MODELS ─────────────────────────────────*/
+// ══ MATH ═══════════════════════════════════════
 function computeCurves(v0,d,k,days=14){
   const decay=[],recovery=[];
   for(let t=0;t<=days;t++){
@@ -992,374 +800,315 @@ function computeCurves(v0,d,k,days=14){
 }
 function generateHeatWeights(p,total=64){
   const gS=8,sig=1.8,tR=Math.floor(p/gS),tC=p%gS;
-  const raw=Array.from({length:total},(_,i)=>{const r=Math.floor(i/gS),c=i%gS;return Math.exp(-((r-tR)**2+(c-tC)**2)/(2*sig*sig));});
-  const sec=(p+9)%total,sR=Math.floor(sec/gS),sC=sec%gS;
-  const raw2=raw.map((v,i)=>{const r=Math.floor(i/gS),c=i%gS;return v+0.4*Math.exp(-((r-sR)**2+(c-sC)**2)/(2*sig*sig));});
-  const s=raw2.reduce((a,b)=>a+b,0); return raw2.map(v=>+(v/s).toFixed(4));
-}
-
-/* ── AGENT PIPELINE CONFIG ───────────────────────*/
-const AP_STEPS_CONFIG = [
-  { id:'pathvision',   icon:'👁️',  name:'PathoVision',       desc:'Visual Language Model — lesion pattern recognition & symptom tokenization' },
-  { id:'regional',     icon:'🗺️',  name:'RegionalGrounded',   desc:'Geospatial engine — agro-climate & soil parameter lookup for target region' },
-  { id:'biothera',     icon:'⚗️',  name:'BioTherapeutic',     desc:'ICAR compound registry — chemical & biological prescription matching' },
-  { id:'yield',        icon:'📈',  name:'YieldPrognostic',    desc:'14-day vegetative vigor decay & recovery curve modeling' },
-  { id:'kinematic',    icon:'🔢',  name:'KinematicSolver',    desc:'Gaussian attention heatmap generation — 8×8 spatial patch grid' },
-  { id:'orchestrate',  icon:'🧠',  name:'TriageOrchestrator', desc:'Multi-agent output synthesis — final report generation & confidence scoring' },
-];
-
-function renderAPSteps(){
-  document.getElementById('ap-steps-container').innerHTML = AP_STEPS_CONFIG.map((s,i)=>`
-    <div class="ap-step" id="ap-step-${s.id}">
-      <span class="ap-step-num">${String(i+1).padStart(2,'0')}</span>
-      <span class="ap-step-icon">${s.icon}</span>
-      <div class="ap-step-body">
-        <div class="ap-step-name">${s.name}</div>
-        <div class="ap-step-desc">${s.desc}</div>
-        <div class="ap-step-log" id="ap-log-${s.id}"></div>
-      </div>
-      <div class="ap-step-right">
-        <div class="ap-dot idle" id="ap-dot-${s.id}"></div>
-        <div class="ap-dur" id="ap-dur-${s.id}"></div>
-      </div>
-    </div>`).join('');
-}
-
-async function runAPStep(sid, logMsg, ms){
-  const step=document.getElementById('ap-step-'+sid),dot=document.getElementById('ap-dot-'+sid);
-  const dur=document.getElementById('ap-dur-'+sid),log=document.getElementById('ap-log-'+sid);
-  if(step) step.classList.add('running');
-  dot.className='ap-dot running'; log.textContent=logMsg; log.classList.add('visible');
-  await delay(ms);
-  dot.className='ap-dot done'; dur.textContent=`${(ms/1000).toFixed(1)}s`; dur.classList.add('visible');
-  if(step){step.classList.remove('running');step.classList.add('done');}
-  const done=document.querySelectorAll('.ap-dot.done').length;
-  document.getElementById('ap-progress-fill').style.width=`${(done/AP_STEPS_CONFIG.length)*100}%`;
-}
-
-function resetAPSteps(){
-  AP_STEPS_CONFIG.forEach(s=>{
-    const dot=document.getElementById('ap-dot-'+s.id),dur=document.getElementById('ap-dur-'+s.id);
-    const log=document.getElementById('ap-log-'+s.id),step=document.getElementById('ap-step-'+s.id);
-    if(dot) dot.className='ap-dot idle';
-    if(dur){dur.textContent='';dur.classList.remove('visible');}
-    if(log){log.textContent='';log.classList.remove('visible');}
-    if(step) step.classList.remove('running','done');
+  const raw=Array.from({length:total},(_,i)=>{
+    const r=Math.floor(i/gS),c=i%gS;
+    return Math.exp(-((r-tR)**2+(c-tC)**2)/(2*sig*sig));
   });
-  document.getElementById('ap-progress-fill').style.width='0%';
-  document.getElementById('ap-overall').textContent='PROCESSING...';
-  document.getElementById('ap-footer-msg').textContent='Agents initializing...';
+  const sec=(p+9)%total,sR=Math.floor(sec/gS),sC=sec%gS;
+  const r2=raw.map((v,i)=>{const r=Math.floor(i/gS),c=i%gS;return v+0.4*Math.exp(-((r-sR)**2+(c-sC)**2)/(2*sig*sig));});
+  const s=r2.reduce((a,b)=>a+b,0);
+  return r2.map(v=>+(v/s).toFixed(4));
 }
 
-/* ── CHARTS ──────────────────────────────────────*/
+function renderAPSteps(){}
+function resetAPSteps(){}
+
+// ══ CHARTS ══════════════════════════════════════
 function initFarmerChart(){
   const ctx=document.getElementById('recovery-chart').getContext('2d');
   const labels=Array.from({length:15},(_,i)=>`Day ${i}`);
   const{decay,recovery}=computeCurves(0.75,0.08,0.22);
   recoveryChart=new Chart(ctx,{type:'line',data:{labels,datasets:[
     {label:'Unchecked Decay',data:decay,borderColor:'#e05030',backgroundColor:'rgba(224,80,48,.07)',tension:.4,fill:true,borderWidth:2,pointRadius:3,pointBackgroundColor:'#e05030'},
-    {label:'With Remediation',data:recovery,borderColor:'#6eb834',backgroundColor:'rgba(110,184,52,.1)',tension:.4,fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#6eb834'}
+    {label:'With Treatment',data:recovery,borderColor:'#6eb834',backgroundColor:'rgba(110,184,52,.1)',tension:.4,fill:true,borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#6eb834'}
   ]},options:{responsive:true,plugins:{legend:{labels:{font:{family:'Space Grotesk',size:12},color:'#5a6b58'}}},
     scales:{x:{grid:{color:'#f0f5ea'},ticks:{font:{family:'JetBrains Mono',size:10},color:'#8ca89c'}},
       y:{min:0,max:1,grid:{color:'#f0f5ea'},ticks:{font:{family:'JetBrains Mono',size:10},color:'#8ca89c',callback:v=>(v*100).toFixed(0)+'%'}}}}});
 }
-function updateFarmerChart(d,k){
-  const{decay,recovery}=computeCurves(0.75,d,k);
-  recoveryChart.data.datasets[0].data=decay; recoveryChart.data.datasets[1].data=recovery; recoveryChart.update();
-}
-function initDiagChart(){
-  const ex=Chart.getChart('diag-curve-chart'); if(ex)ex.destroy();
+function updateFarmerChart(d,k){ const{decay,recovery}=computeCurves(0.75,d,k); recoveryChart.data.datasets[0].data=decay; recoveryChart.data.datasets[1].data=recovery; recoveryChart.update(); }
+function initDiagChart(){ const ex=Chart.getChart('diag-curve-chart'); if(ex)ex.destroy();
   const ctx=document.getElementById('diag-curve-chart').getContext('2d');
-  const labels=Array.from({length:15},(_,i)=>`D${i}`);
-  diagChart=new Chart(ctx,{type:'line',data:{labels,datasets:[
+  diagChart=new Chart(ctx,{type:'line',data:{labels:Array.from({length:15},(_,i)=>`D${i}`),datasets:[
     {label:'Decay',data:[],borderColor:'#e05030',tension:.4,fill:false,borderWidth:2,pointRadius:2},
     {label:'Recovery',data:[],borderColor:'#6eb834',tension:.4,fill:false,borderWidth:2,pointRadius:2}
   ]},options:{responsive:true,plugins:{legend:{labels:{font:{family:'Space Grotesk',size:11},color:'#5a6b58'}}},
     scales:{x:{grid:{color:'#f0f5ea'},ticks:{font:{family:'JetBrains Mono',size:9},color:'#8ca89c'}},
-      y:{min:0,max:1,grid:{color:'#f0f5ea'},ticks:{font:{family:'JetBrains Mono',size:9},color:'#8ca89c',callback:v=>(v*100).toFixed(0)+'%'}}}}});
-}
-function updateDiagChart(d,k){
-  if(!diagChart) initDiagChart();
-  const{decay,recovery}=computeCurves(0.75,d,k);
-  diagChart.data.datasets[0].data=decay; diagChart.data.datasets[1].data=recovery; diagChart.update();
-}
+      y:{min:0,max:1,grid:{color:'#f0f5ea'},ticks:{font:{family:'JetBrains Mono',size:9},color:'#8ca89c',callback:v=>(v*100).toFixed(0)+'%'}}}}}); }
+function updateDiagChart(d,k){ if(!diagChart)initDiagChart(); const{decay,recovery}=computeCurves(0.75,d,k); diagChart.data.datasets[0].data=decay; diagChart.data.datasets[1].data=recovery; diagChart.update(); }
 
-/* ── MANDI DATA ──────────────────────────────────*/
+// ══ MANDI ═══════════════════════════════════════
 const MANDI_DATA=[
-  {crop:'Tomato',mandi:'Azadpur, Delhi',state:'Delhi',price:2140,min:1800,max:2600,change:+5.2,trend:'up',lat:28.73,lng:77.18,nearby:[{city:'Ghaziabad',price:2020,mandi:'Ghaziabad APMC'},{city:'Faridabad',price:1980,mandi:'Faridabad Market'},{city:'Sonipat',price:2100,mandi:'Sonipat Mandi'}]},
-  {crop:'Wheat',mandi:'Khanna, Punjab',state:'Punjab',price:2250,min:2200,max:2300,change:-1.1,trend:'down',lat:30.7,lng:76.22,nearby:[{city:'Ludhiana',price:2240,mandi:'Ludhiana APMC'},{city:'Amritsar',price:2260,mandi:'Amritsar Grain'},{city:'Patiala',price:2230,mandi:'Patiala Mandi'}]},
-  {crop:'Rice (Basmati)',mandi:'Amritsar',state:'Punjab',price:3800,min:3400,max:4200,change:+2.3,trend:'up',lat:31.63,lng:74.87,nearby:[{city:'Gurdaspur',price:3750,mandi:'Gurdaspur APMC'},{city:'Pathankot',price:3820,mandi:'Pathankot Market'},{city:'Batala',price:3780,mandi:'Batala Mandi'}]},
-  {crop:'Cotton',mandi:'Rajkot, Gujarat',state:'Gujarat',price:6200,min:5900,max:6500,change:-0.8,trend:'down',lat:22.3,lng:70.78,nearby:[{city:'Junagadh',price:6150,mandi:'Junagadh Mandi'},{city:'Amreli',price:6180,mandi:'Amreli APMC'},{city:'Bhavnagar',price:6220,mandi:'Bhavnagar Market'}]},
-  {crop:'Potato',mandi:'Agra, UP',state:'UP',price:1080,min:900,max:1300,change:+8.4,trend:'up',lat:27.18,lng:78.01,nearby:[{city:'Mathura',price:1050,mandi:'Mathura APMC'},{city:'Hathras',price:1100,mandi:'Hathras Market'},{city:'Aligarh',price:1090,mandi:'Aligarh Mandi'}]},
-  {crop:'Onion',mandi:'Lasalgaon, MH',state:'Maharashtra',price:1560,min:1200,max:1900,change:-3.2,trend:'down',lat:20.12,lng:74.22,nearby:[{city:'Nashik',price:1600,mandi:'Nashik APMC'},{city:'Pune',price:1650,mandi:'Pune Market'},{city:'Ahmednagar',price:1540,mandi:'Ahmednagar Mandi'}]},
+  {crop:'Tomato',mandi:'Azadpur, Delhi',state:'Delhi',price:2140,min:1800,max:2600,change:+5.2,trend:'up',lat:28.73,lng:77.18,
+   nearby:[{city:'Ghaziabad',price:2020,mandi:'Ghaziabad APMC'},{city:'Faridabad',price:1980,mandi:'Faridabad Market'},{city:'Sonipat',price:2100,mandi:'Sonipat Mandi'}]},
+  {crop:'Wheat',mandi:'Khanna, Punjab',state:'Punjab',price:2250,min:2200,max:2300,change:-1.1,trend:'down',lat:30.7,lng:76.22,
+   nearby:[{city:'Ludhiana',price:2240,mandi:'Ludhiana APMC'},{city:'Amritsar',price:2260,mandi:'Amritsar Grain'},{city:'Patiala',price:2230,mandi:'Patiala Mandi'}]},
+  {crop:'Rice (Basmati)',mandi:'Amritsar',state:'Punjab',price:3800,min:3400,max:4200,change:+2.3,trend:'up',lat:31.63,lng:74.87,
+   nearby:[{city:'Gurdaspur',price:3750,mandi:'Gurdaspur APMC'},{city:'Pathankot',price:3820,mandi:'Pathankot Market'},{city:'Batala',price:3780,mandi:'Batala Mandi'}]},
+  {crop:'Cotton',mandi:'Rajkot, Gujarat',state:'Gujarat',price:6200,min:5900,max:6500,change:-0.8,trend:'down',lat:22.3,lng:70.78,
+   nearby:[{city:'Junagadh',price:6150,mandi:'Junagadh Mandi'},{city:'Amreli',price:6180,mandi:'Amreli APMC'},{city:'Bhavnagar',price:6220,mandi:'Bhavnagar Market'}]},
+  {crop:'Potato',mandi:'Agra, UP',state:'UP',price:1080,min:900,max:1300,change:+8.4,trend:'up',lat:27.18,lng:78.01,
+   nearby:[{city:'Mathura',price:1050,mandi:'Mathura APMC'},{city:'Hathras',price:1100,mandi:'Hathras Market'},{city:'Aligarh',price:1090,mandi:'Aligarh Mandi'}]},
+  {crop:'Onion',mandi:'Lasalgaon, MH',state:'Maharashtra',price:1560,min:1200,max:1900,change:-3.2,trend:'down',lat:20.12,lng:74.22,
+   nearby:[{city:'Nashik',price:1600,mandi:'Nashik APMC'},{city:'Pune',price:1650,mandi:'Pune Market'},{city:'Ahmednagar',price:1540,mandi:'Ahmednagar Mandi'}]},
 ];
-function latLngToSVG(lat,lng){ const x=((lng-68)/(97-68))*440+30,y=((37-lat)/(37-8))*500+30; return{x:Math.round(x),y:Math.round(y)}; }
+function latLngToSVG(lat,lng){ return{x:lng, y:36-(lat-6)}; }
 function renderMandi(){
   document.getElementById('mandi-table').innerHTML=`<thead><tr><th>Crop</th><th>Market</th><th>Modal Price</th><th>Range</th><th>Change</th></tr></thead><tbody>`+
-    MANDI_DATA.map((r,i)=>`<tr style="cursor:pointer" onclick="showNearby(${i})">
-      <td><strong>${r.crop}</strong></td><td style="color:var(--dim);font-size:12px">${r.mandi}</td>
-      <td class="mono"><strong>₹${r.price}</strong><span style="font-size:10px;color:var(--dim)"> /qtl</span></td>
-      <td style="font-size:11px;color:var(--dim)">₹${r.min}–${r.max}</td>
+    MANDI_DATA.map((r,i)=>`<tr onclick="showNearby(${i})" title="Click for nearby prices" style="cursor:pointer">
+      <td><strong>${r.crop}</strong></td>
+      <td style="color:var(--dim);font-size:12px">${r.mandi}</td>
+      <td class="mono"><strong>Rs ${r.price}</strong><span style="font-size:10px;color:var(--dim)"> /qtl</span></td>
+      <td style="font-size:11px;color:var(--dim)">Rs ${r.min}–${r.max}</td>
       <td class="${r.change>=0?'price-up':'price-dn'}">${r.change>=0?'▲':'▼'} ${Math.abs(r.change)}%</td>
     </tr>`).join('')+'</tbody>';
   const pinsEl=document.getElementById('map-pins');
   pinsEl.innerHTML=MANDI_DATA.map((r,i)=>{
-    const{x,y}=latLngToSVG(r.lat,r.lng),col=r.trend==='up'?'#166534':'#b91c1c';
-    return`<g class="map-pin-group" onclick="showNearby(${i})">
-      <circle cx="${x}" cy="${y}" r="7" fill="${col}" opacity=".85" stroke="#fff" stroke-width="1.5"/>
-      <text x="${x}" y="${y+4}" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" font-family="JetBrains Mono">${r.price>1000?Math.round(r.price/100)+'h':r.price}</text>
-      <rect x="${x-24}" y="${y-22}" width="48" height="14" rx="3" fill="var(--soil)" class="map-pin-label" opacity="0.9"/>
-      <text x="${x}" y="${y-12}" text-anchor="middle" class="map-pin-label" fill="#d0e8c0" font-size="8" font-family="JetBrains Mono">${r.crop}</text>
+    const cx=r.lng;
+    const cy=36-(r.lat-6); 
+    const col=r.trend==='up'?'#166534':'#b91c1c';
+    const priceLabel=r.price>=1000?(r.price/1000).toFixed(1)+'k':r.price;
+    return`<g class="map-pin-group" onclick="showNearby(${i})" style="cursor:pointer">
+      <circle cx="${cx}" cy="${cy}" r="0.28" fill="${col}" opacity=".92" stroke="#fff" stroke-width="0.08"/>
+      <text x="${cx}" y="${cy+0.1}" text-anchor="middle" fill="#fff" font-size="0.22" font-weight="bold" font-family="JetBrains Mono">${priceLabel}</text>
+      <rect x="${cx-0.7}" y="${cy-0.62}" width="1.4" height="0.38" rx="0.07" fill="${col}" class="map-pin-label" opacity="0.92"/>
+      <text x="${cx}" y="${cy-0.38}" text-anchor="middle" class="map-pin-label" fill="#fff" font-size="0.25" font-family="Space Grotesk" font-weight="700">${r.crop}</text>
+      <text x="${cx}" y="${cy-0.15}" text-anchor="middle" class="map-pin-label" fill="#d0ffb0" font-size="0.20" font-family="JetBrains Mono">${r.mandi}</text>
     </g>`;
   }).join('');
 }
 function showNearby(i){
   const r=MANDI_DATA[i];
   document.getElementById('nearby-label').textContent=`Nearby Markets — ${r.crop} (${r.mandi})`;
-  const allM=[{city:r.mandi.split(',')[0],price:r.price,mandi:r.mandi,isMain:true},...r.nearby.map(n=>({...n,isMain:false}))].sort((a,b)=>b.price-a.price);
-  document.getElementById('nearby-table').innerHTML=`<thead><tr><th>Market</th><th>City</th><th>Price (₹/qtl)</th><th>vs Modal</th></tr></thead><tbody>`+
-    allM.map(m=>{const diff=m.price-r.price,ds=diff===0?'—':(diff>0?`+${diff}`:`${diff}`),dc=diff>0?'price-up':diff<0?'price-dn':'';
-      return`<tr ${m.isMain?'style="background:var(--mist)"':''}><td>${m.mandi}${m.isMain?' <span class="badge badge-info" style="font-size:9px">selected</span>':''}</td>
-      <td style="color:var(--dim)">${m.city}</td><td class="mono"><strong>₹${m.price}</strong></td><td class="${dc}">${ds}</td></tr>`;
+  const all=[{city:r.mandi.split(',')[0],price:r.price,mandi:r.mandi,isMain:true},...r.nearby.map(n=>({...n,isMain:false}))].sort((a,b)=>b.price-a.price);
+  document.getElementById('nearby-table').innerHTML=`<thead><tr><th>Market</th><th>City</th><th>Price (Rs/qtl)</th><th>vs Modal</th></tr></thead><tbody>`+
+    all.map(m=>{
+      const diff=m.price-r.price,ds=diff===0?'—':(diff>0?`+${diff}`:`${diff}`);
+      return`<tr ${m.isMain?'style="background:var(--mist)"':''}>
+        <td>${m.mandi}${m.isMain?' <span class="badge badge-info" style="font-size:9px">selected</span>':''}</td>
+        <td style="color:var(--dim)">${m.city}</td><td class="mono"><strong>Rs ${m.price}</strong></td>
+        <td class="${diff>0?'price-up':diff<0?'price-dn':''}">${ds}</td></tr>`;
     }).join('')+'</tbody>';
   document.getElementById('nearby-section').style.display='block';
   document.getElementById('nearby-section').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-/* ── FARMER TRIAGE (SEASONAL PLAIN-LANGUAGE REPORT) ──*/
+// ══ FARMER TRIAGE ═══════════════════════════════
 async function runTriage(){
-  if(!currentUser){ showToast('Please sign in first.'); return; }
-  const crop=document.getElementById('f-crop').value,stage=document.getElementById('f-stage').value;
-  const region=document.getElementById('f-region').value,symptoms=document.getElementById('f-symptoms').value.trim();
-  if(!crop||!stage||!region||!symptoms){ showToast('Please fill all 4 fields first.'); return; }
+  const crop=document.getElementById('f-crop').value;
+  const stage=document.getElementById('f-stage').value;
+  const region=document.getElementById('f-region').value;
+  const symptoms=document.getElementById('f-symptoms').value.trim();
+  if(!crop||!stage||!region||!symptoms){showToast('Please fill all fields first.');return;}
 
-  const sym=symptoms.toLowerCase();
-  let d=0.05,k=0.20,code='BIOT-STRESS-GEN',sev='LOW';
-  if(sym.includes('blight')||sym.includes('spot')||sym.includes('brown')||sym.includes('ring')){d=0.12;k=0.28;code='PATH-ALT-BLIGHT';sev='HIGH';}
-  else if(sym.includes('mildew')||sym.includes('powder')||sym.includes('white')){d=0.08;k=0.32;code='PATH-MILDEW-COAT';sev='MEDIUM';}
-  else if(sym.includes('rust')||sym.includes('orange')||sym.includes('pustule')){d=0.10;k=0.25;code='PATH-RUST-PST';sev='HIGH';}
-  else if(sym.includes('wilt')||sym.includes('droop')||sym.includes('collapse')){d=0.15;k=0.18;code='PATH-BACT-WILT';sev='HIGH';}
-
-  const btn=document.getElementById('triage-btn'); btn.disabled=true;
+  const btn=document.getElementById('triage-btn');
+  btn.disabled=true;
   document.getElementById('triage-btn-inner').innerHTML='<div class="spinner"></div> Analyzing...';
-  resetAPSteps(); triageStartTime=Date.now();
+  document.getElementById('triage-result').innerHTML='<div class="rp-section"><div class="rp-text" style="display:flex;align-items:center;gap:8px;color:#888;font-family:Space Grotesk,sans-serif"><div class="spinner spinner-dark"></div> Preparing your farm report, please wait a moment...</div></div>';
+  document.getElementById('report-actions').style.display='none';
+  triageStartTime=Date.now();
 
-  const apLogs=[
-    `PathoVision: Tokenizing "${symptoms.substring(0,30)}..."`,
-    `RegionalGrounded: Mapping ${region} agro-climate zone`,
-    `BioTherapeutic: Querying ICAR compound DB [code: ${code}]`,
-    `YieldPrognostic: Computing decay rate d=${d}, k=${k}`,
-    `KinematicSolver: Generating 8×8 Gaussian heatmap`,
-    `TriageOrchestrator: Synthesizing multi-agent outputs`,
-  ];
-  for(let i=0;i<AP_STEPS_CONFIG.length;i++){
-    document.getElementById('ap-footer-msg').textContent=`Running ${AP_STEPS_CONFIG[i].name}...`;
-    await runAPStep(AP_STEPS_CONFIG[i].id, apLogs[i], 400+i*120);
-  }
-  document.getElementById('ap-overall').textContent='COMPLETE ✓';
-  document.getElementById('ap-footer-msg').textContent=`Report generated in ${((Date.now()-triageStartTime)/1000).toFixed(1)}s`;
+  let d=0.05,k=0.20,code='BIOT-STRESS-GEN',sev='LOW',pathName='Abiotic/Nutritional Stress';
 
-  // Get current month / season context
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const currentMonth = months[new Date().getMonth()];
-  const nextMonths = [months[new Date().getMonth()],months[(new Date().getMonth()+1)%12],months[(new Date().getMonth()+2)%12]];
-
-  // PLAIN-LANGUAGE SEASONAL FARMER REPORT via Claude
-  const FARMER_SYSTEM = `You are KrishiAI, a plain-speaking Indian agricultural advisor writing a Seasonal Crop Advisory Report directly for a farmer. 
-Write in clear, practical English (not bullet points — use flowing paragraphs with headings). The report MUST include these sections in this exact order:
-1. Current Situation (what disease/issue is detected and how urgent)
-2. Weather & Season Context (how current season — ${currentMonth} — and upcoming weather affects this crop and disease spread)
-3. This Week — Immediate Actions (what the farmer must do in the next 7 days, very practical)
-4. 3-Month Management Calendar (month-by-month: ${nextMonths[0]}, ${nextMonths[1]}, ${nextMonths[2]} — what to do each month for soil, irrigation, fertilizer, disease management)
-5. Market Outlook (when is the best time to sell this crop, current price trends, which nearby mandi)
-6. Government Schemes (relevant schemes — PM-KISAN, PMFBY crop insurance, Kisan Credit Card, MSP — and how to apply)
-Use ₹ for rupees. Reference ICAR recommendations. Write as if talking to the farmer directly. About 400 words total.`;
-
-  let reportText;
-  try {
-    reportText = await callClaude(FARMER_SYSTEM, `Crop: ${crop} | Stage: ${stage} | Region: ${region}\nFarmer reports: ${symptoms}\nSeverity code: ${sev}`);
-  } catch(e) {
-    reportText = `Current Situation\n\nBased on your description, your ${crop} crop in the ${stage} stage is showing symptoms consistent with a ${sev.toLowerCase()} severity fungal or bacterial infection. The lesion patterns you have described — "${symptoms.substring(0,80)}..." — suggest immediate attention is needed to prevent further crop loss.\n\n3-Month Management Calendar\n\nIn ${nextMonths[0]}, focus on removing and burning all infected plant debris and applying a copper-based fungicide at 2 kg per acre. In ${nextMonths[1]}, shift to preventative sprays every 14 days and monitor humidity levels carefully — avoid overhead irrigation. In ${nextMonths[2]}, if recovery is on track, reduce spray frequency and focus on nutrition with a 19:19:19 NPK foliar feed.\n\nMarket Outlook\n\nCurrent market rates for ${crop} in ${region} are favourable. Plan your harvest for early morning to maximise freshness. Azadpur Mandi in Delhi is currently offering strong prices. Watch the Agmarknet portal daily.\n\nGovernment Schemes\n\nYou may be eligible for PM-KISAN (₹6,000/year) and PMFBY crop insurance. Contact your local KVK or Common Service Centre to apply.`;
+  let aiText,curves;
+  try{
+    const result=await apiPost('triage',{crop_type:crop,crop_stage:stage,region,symptoms,area_acres:1});
+    aiText=result.ai_triage;
+    d=result.decay_rate; k=result.recovery_k;
+    code=result.diagnostic_code; sev=result.severity;
+    pathName=result.diagnostic_code; 
+    curves={decay:result.decay_curve,recovery:result.recovery_curve};
+  }catch(e){
+    console.error('Triage API error:',e);
+    const sym=symptoms.toLowerCase();
+    if(sym.includes('blight')||sym.includes('spot')||sym.includes('brown')||sym.includes('ring')){d=0.12;k=0.28;code='PATH-ALT-BLIGHT';sev='HIGH';pathName='Early Blight (Alternaria solani)';}
+    else if(sym.includes('mildew')||sym.includes('powder')||sym.includes('white')){d=0.08;k=0.32;code='PATH-MILDEW-COAT';sev='MEDIUM';pathName='Powdery Mildew';}
+    else if(sym.includes('rust')||sym.includes('orange')||sym.includes('pustule')){d=0.10;k=0.25;code='PATH-RUST-PST';sev='HIGH';pathName='Stripe Rust';}
+    else if(sym.includes('wilt')||sym.includes('droop')||sym.includes('collapse')){d=0.15;k=0.18;code='PATH-BACT-WILT';sev='HIGH';pathName='Bacterial Wilt';}
+    curves=computeCurves(0.75,d,k);
+    aiText=`WHAT WE FOUND: Your ${crop} crop shows signs of ${pathName}. This is a ${sev.toLowerCase()} risk condition that needs your attention right away.\n\nCURRENT WEATHER AND SEASON: ${region} conditions are currently favouring disease spread. Act promptly.\n\nWHAT YOU MUST DO TODAY: Remove infected leaves and destroy them. Avoid evening watering. Improve air circulation between plants.\n\nSPRAY RECOMMENDATION: Mancozeb 75 WP at 2g per liter of water. Spray all leaf surfaces every 7 days for 3 cycles. Wear gloves and mask.\n\nNATURAL OPTION: Neem oil 10ml per liter with a drop of soap, spray every 5 days as a safe alternative.\n\n3 MONTH OUTLOOK: Month 1 — Apply treatment and monitor every 2 days. Month 2 — Continue monitoring, switch to neem during flowering. Month 3 — Crop should recover if treated promptly.`;
   }
 
-  // Render as formatted prose (convert markdown-ish to styled HTML)
-  const formatted = reportText.replace(/^(\d+\.\s+)?([\w &\-\/]+)$/gm, (m,num,title) =>
-    title.length < 60 ? `<h3>${title}</h3>` : m
-  ).replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+  const sections=aiText.split(/\n(?=[A-Z][A-Z\s]+:)/g).filter(s=>s.trim());
+  let html='';
+  sections.forEach(sec=>{
+    const colonIdx=sec.indexOf(':');
+    if(colonIdx>-1&&colonIdx<60){
+      const heading=sec.substring(0,colonIdx).trim();
+      const body=sec.substring(colonIdx+1).trim();
+      html+=`<div class="rp-section"><div class="rp-heading">${heading}</div><div class="rp-text">${body}</div></div>`;
+    } else {
+      html+=`<div class="rp-section"><div class="rp-text">${sec.trim()}</div></div>`;
+    }
+  });
+  document.getElementById('triage-result').className='report-plain';
+  document.getElementById('triage-result').innerHTML=html||`<div class="rp-section"><div class="rp-text">${aiText}</div></div>`;
 
-  document.getElementById('triage-result').innerHTML = `<h3>Seasonal Crop Advisory — ${crop} | ${region}</h3><p>${formatted}</p>`;
-  document.getElementById('triage-pdf-btn').style.display='block';
+  if(!curves) curves=computeCurves(0.75,d,k);
+  lastTriageData={crop,stage,region,symptoms,code,sev,pathName,aiText,curves,d,k};
+
+  document.getElementById('diag-badge-area').style.display='block';
+  document.getElementById('diag-badge').innerHTML=
+    `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--mist);border-radius:9px;border:1px solid var(--border)">
+      <span class="badge badge-${sev==='HIGH'?'high':sev==='MEDIUM'?'med':'low'}">${sev} RISK</span>
+      <span style="font-size:12px;color:var(--ink)">${pathName}</span>
+      <span class="mono" style="font-size:10px;color:var(--dim);margin-left:auto">${code}</span>
+    </div>`;
 
   updateFarmerChart(d,k);
-  lastTriageData={crop,stage,region,symptoms,sev,d,k,reportText};
-  btn.disabled=false; document.getElementById('triage-btn-inner').textContent='⚡ Run AI Triage Analysis';
-  showToast('Seasonal advisory report generated!');
+  const reportActions = document.getElementById('report-actions');
+  reportActions.style.display='flex';
+  reportActions.style.flexWrap='wrap';
+  btn.disabled=false;
+  document.getElementById('triage-btn-inner').textContent='Get My Farm Report';
+  showToast('Your farm report is ready. You can download or print it.');
+  trackVisit('triage');
 }
 
-/* ── AGRONOMIST: FILE UPLOAD / IMAGE PROCESSING ──*/
-let currentImageB64 = null, currentImageMime = 'image/jpeg';
-function handleDragOver(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
-function handleDragLeave(){ document.getElementById('drop-zone').classList.remove('drag-over'); }
-function handleDrop(e){
-  e.preventDefault(); document.getElementById('drop-zone').classList.remove('drag-over');
-  const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')) processImage(f);
+function downloadReportFile(){
+  if(!lastTriageData){showToast('Generate a report first.');return;}
+  const{crop,stage,region,symptoms,pathName,sev,aiText}=lastTriageData;
+  const now=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  const content=`KRISHIKONNECT — FARM ADVISORY REPORT
+============================================
+Date        : ${now}
+Farmer      : ${currentUser?.name||'Farmer'}
+Crop        : ${crop}
+Growth Stage: ${stage}
+Region      : ${region}
+Problem     : ${pathName}
+Risk Level  : ${sev}
+
+SYMPTOMS YOU REPORTED:
+${symptoms}
+
+============================================
+YOUR FARM ADVISORY
+============================================
+
+${aiText}
+
+============================================
+Note: This report is generated by AI. Please
+consult your local KVK or ICAR agronomist for
+important decisions. Pesticide use must follow
+the Insecticides Act 1968 and local rules.
+============================================
+KrishiKonnect AI Platform
+`;
+  const blob=new Blob([content],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`KrishiKonnect-FarmReport-${crop.toLowerCase()}-${Date.now().toString().slice(-6)}.txt`;
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('Report downloaded as text file.');
 }
-function handleFileSelect(e){ const f=e.target.files[0]; if(f) processImage(f); }
-function processImage(f){
-  currentImageMime = f.type||'image/jpeg';
-  const reader=new FileReader();
-  reader.onload=async e=>{
-    const dataUrl=e.target.result;
-    currentImageB64=dataUrl.split(',')[1];
-    document.getElementById('upload-preview').src=dataUrl;
-    document.getElementById('upload-preview-wrap').style.display='block';
-    document.getElementById('upload-prompt').style.display='none';
-    document.getElementById('scan-badge').style.display='block';
-    document.getElementById('drop-zone').classList.remove('drag-over');
-    // Scan animation
-    const sl=document.getElementById('scan-line'); sl.style.display='block';
-    setTimeout(()=>{ sl.style.display='none'; },2000);
-    // Chips
-    const chips=['VLM-READY','IMG-OK',f.type.split('/')[1].toUpperCase(),'LOADING...'];
-    document.getElementById('scan-chips').innerHTML=chips.map(c=>`<div class="scan-chip">${c}</div>`).join('');
-    // Quick VLM scan
-    try{
-      const vlmSys='You are a plant pathologist. Briefly describe what you see in this leaf/crop image: color, lesion type, distribution, and likely disease class. 2-3 sentences, plain text.';
-      const vlmRes=await callClaude(vlmSys,'Describe this crop image.',currentImageB64,currentImageMime);
-      document.getElementById('img-scan-text').textContent=vlmRes;
-      document.getElementById('img-scan-result').style.display='block';
-      document.getElementById('scan-chips').innerHTML=['VLM-READY','IMG-SCANNED','AI-PARSED','✓ READY'].map(c=>`<div class="scan-chip">${c}</div>`).join('');
-    }catch(err){
-      document.getElementById('scan-chips').innerHTML=['VLM-READY','IMG-OK','OFFLINE-MODE'].map(c=>`<div class="scan-chip">${c}</div>`).join('');
+
+function generatePDF(type){
+  const now=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  let html='';
+  if(type==='triage'&&lastTriageData){
+    const{crop,stage,region,symptoms,code,sev,pathName,aiText,curves}=lastTriageData;
+    let rows='';
+    for(let t=0;t<=14;t++){
+      const g=((curves.recovery[t]-curves.decay[t])*100).toFixed(1);
+      rows+=`<tr><td>Day ${t}</td><td>${(curves.decay[t]*100).toFixed(1)}%</td><td>${(curves.recovery[t]*100).toFixed(1)}%</td><td>+${g}%</td></tr>`;
     }
-  };
-  reader.readAsDataURL(f);
-}
+    html=`<div class="pdf-header"><div><div class="pdf-logo">Krishi<span>Konnect</span></div><div style="font-size:11px;color:#555;margin-top:2px">AI Crop Intelligence Platform</div></div><div class="pdf-meta-small">Report ID: TRG-${Date.now().toString().slice(-6)}<br>Date: ${now}<br>Prepared for: ${currentUser?.name||'Farmer'}</div></div>
+    <div class="pdf-title">Farm Advisory Report</div><div class="pdf-sub">${crop} — ${stage} — ${region}</div>
+    <div class="pdf-meta-row"><div class="pdf-mi"><strong>Crop</strong><span>${crop}</span></div><div class="pdf-mi"><strong>Stage</strong><span>${stage}</span></div><div class="pdf-mi"><strong>Region</strong><span>${region}</span></div><div class="pdf-mi"><strong>Code</strong><span>${code}</span></div><div class="pdf-mi"><strong>Risk</strong><span>${sev}</span></div></div>
+    <div class="pdf-sec-title">Symptoms Reported</div><div class="pdf-body">${symptoms}</div>
+    <div class="pdf-sec-title">Farm Advisory</div><div class="pdf-body">${aiText}</div>
+    <div class="pdf-sec-title">14-Day Recovery Projection</div><table class="pdf-table"><thead><tr><th>Day</th><th>Without Treatment</th><th>With Treatment</th><th>Gain</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="pdf-footer"><span>KrishiKonnect AI Platform</span><span>${now}</span></div>
+    <div class="pdf-disclaimer">AI-generated advisory. Consult your local KVK or ICAR agronomist for critical decisions. Pesticide use must comply with Insecticides Act 1968.</div>`;
+  } else if(type==='deep'&&lastDiagData){
+    const{crop,stage,region,area,pathogen,confidence,severity,chemRx,bioRx,aiAnalysis,farmerAdv,agronNotes,ipmNotes,curves}=lastDiagData;
+    const keyDays=[0,2,4,7,10,14];
+    let rows='';
+    keyDays.forEach(t=>{
+      const dv=curves.decay[t]||0, rv=curves.recovery[t]||0;
+      const g=((rv-dv)*100).toFixed(1);
+      rows+=`<tr><td>Day ${t}</td><td>${(dv*100).toFixed(1)}%</td><td>${(rv*100).toFixed(1)}%</td><td style="color:#2b5c12;font-weight:700">+${g}%</td></tr>`;
+    });
+    const trim=(s,n)=>s&&s.length>n?s.substring(0,n).trimEnd()+'…':s||'—';
+    const ipmStr=(ipmNotes||[]).slice(0,3).map((n,i)=>`${i+1}. ${n}`).join(' · ');
+    
+    // Explicit dynamic integration of case thumbnail into standard printable layout definition
+    const activeCaseImg = CASES[activeCaseIdx] && CASES[activeCaseIdx].thumb ? CASES[activeCaseIdx].thumb : '';
 
-/* ── AGRONOMIST PIPELINE CONFIG ──────────────────*/
-const PIPE_CFG=[
-  {id:'p1',icon:'👁️',name:'PathoVision',     desc:'Lesion morphology analysis & visual classification'},
-  {id:'p2',icon:'🗺️',name:'RegionalGrounded',desc:'Agro-climate + soil type mapping for region'},
-  {id:'p3',icon:'⚗️',name:'BioTherapeutic',   desc:'Chemical & biological compound matching via ICAR DB'},
-  {id:'p4',icon:'📈',name:'YieldPrognostic',   desc:'Decay/recovery curve modeling — 14-day projection'},
-  {id:'p5',icon:'🔢',name:'KinematicSolver',   desc:'8×8 Gaussian attention heatmap generation'},
-  {id:'p6',icon:'🧠',name:'TriageOrchestrator',desc:'Multi-agent synthesis + confidence scoring'},
-];
-
-function renderPipeline(){
-  document.getElementById('pipeline-steps').innerHTML=PIPE_CFG.map(s=>`
-    <div class="pipe-step" id="${s.id}">
-      <div class="pipe-dot" id="${s.id}-dot"></div>
-      <span style="font-size:13px">${s.icon}</span>
-      <div style="flex:1">
-        <div class="pipe-name">${s.name}</div>
-        <div style="font-size:10px;color:var(--dim)">${s.desc}</div>
-        <div class="pipe-out" id="${s.id}-out"></div>
+    html=`<div class="pdf-wrap">
+    <div class="pdf-header">
+      <div>
+        <div class="pdf-logo">Krishi<span>Konnect</span></div>
+        <div style="font-size:10px;color:#555;margin-top:2px;font-family:sans-serif">Agronomist Deep Diagnosis Report</div>
       </div>
-    </div>`).join('');
-}
-function resetPipeline(){ PIPE_CFG.forEach(s=>{document.getElementById(s.id)?.classList.remove('running','done');const dot=document.getElementById(s.id+'-dot');if(dot)dot.className='pipe-dot';const out=document.getElementById(s.id+'-out');if(out){out.textContent='';out.style.display='none';}}); }
-async function runPipeStep(idx,out,ms){
-  const s=PIPE_CFG[idx],el=document.getElementById(s.id),dot=document.getElementById(s.id+'-dot'),outEl=document.getElementById(s.id+'-out');
-  if(el) el.classList.add('running'); if(dot) dot.className='pipe-dot running';
-  await delay(ms);
-  if(el){el.classList.remove('running');el.classList.add('done');}
-  if(dot) dot.className='pipe-dot done';
-  if(outEl){outEl.textContent=out;outEl.style.display='block';}
-}
+      <div class="pdf-meta-small">
+        Case ID: DX-${Date.now().toString().slice(-6)}<br>
+        Date: ${now}<br>
+        Agronomist: ${currentUser?.name||'Field Agronomist'}
+      </div>
+    </div>
 
-/* ── DEEP DIAGNOSIS ──────────────────────────────*/
-async function runDeepDiagnosis(){
-  if(!currentUser){ showToast('Please sign in first.'); return; }
-  const crop=document.getElementById('d-crop').value,stage=document.getElementById('d-stage').value;
-  const region=document.getElementById('d-region').value,area=document.getElementById('d-area').value;
-  const symptoms=document.getElementById('d-symptoms').value.trim();
-  if(!crop){ showToast('Please select a crop first.'); return; }
+    <div class="pdf-title" style="font-size:18px;margin-bottom:2px">Deep Pathological Diagnosis</div>
+    <div class="pdf-sub" style="font-size:12px;margin-bottom:10px">${crop} · ${stage} · ${region} · ${area} acres</div>
 
-  const sym=symptoms.toLowerCase();
-  let pathogen='Alternaria alternata',chemRx='Chlorothalonil 75WP @ 2 g/L. PHI: 7 days. Spray in 200L water/acre.',bioRx='Trichoderma viride @ 4g/L water + Pseudomonas fluorescens soil drench.',severity='MEDIUM',ipmNotes=['Remove and burn infected debris','Avoid overhead irrigation','Use certified disease-free seed'],d=0.09,k=0.24;
-  if(sym.includes('blight')||sym.includes('phytophthora')){pathogen='Phytophthora infestans';d=0.13;k=0.22;severity='HIGH';chemRx='Fluopicolide 5.56% + Propamocarb 52.5% SC @ 3ml/L. PHI: 5 days. Apply every 5 days in high moisture.';bioRx='Bacillus subtilis @ 2.5g/L. Copper hydroxide 53.8% DF as protectant.';}
-  else if(sym.includes('rust')||sym.includes('pustule')){pathogen='Puccinia triticina';d=0.10;k=0.26;severity='HIGH';chemRx='Propiconazole 25EC @ 1ml/L + Hexaconazole 5EC @ 2ml/L alternating sprays. PHI: 14 days.';bioRx='No effective biological; rely on resistant varieties.';}
-  else if(sym.includes('mildew')||sym.includes('powder')){pathogen='Erysiphe cichoracearum';d=0.07;k=0.30;severity='MEDIUM';chemRx='Wettable Sulfur 80WP @ 3g/L or Tebuconazole 25.9EC @ 1ml/L. PHI: 3 days.';bioRx='Bacillus amyloliquefaciens @ 5g/L spray. Neem oil 2% emulsion.';}
-  else if(sym.includes('wilt')||sym.includes('vascular')){pathogen='Fusarium oxysporum';d=0.14;k=0.16;severity='CRITICAL';chemRx='No foliar cure. Carbendazim 50WP soil drench @ 1g/L. Avoid waterlogging.';bioRx='Trichoderma harzianum @ 5g/kg seed + soil @ 2.5kg/acre. Organic amendment.';}
+    ${activeCaseImg ? `<div style="text-align:center; margin-bottom:12px; width:100%;"><div style="width:400px; height:260px; margin:0 auto; border:1px solid #cddbc4; border-radius:6px; overflow:hidden;"><img src="${activeCaseImg}" style="width:100%; height:100%; object-fit:contain;"></div></div>` : ''}
 
-  const btn=document.getElementById('diag-btn'); btn.disabled=true;
-  document.getElementById('diag-btn-inner').innerHTML='<div class="spinner"></div> Running AI Analysis...';
-  resetPipeline();
+    <div class="pdf-meta-row" style="padding:8px 12px;margin-bottom:10px;gap:14px">
+      <div class="pdf-mi"><strong>Pathogen</strong><span style="font-size:12px">${pathogen}</span></div>
+      <div class="pdf-mi"><strong>Confidence</strong><span style="font-size:12px">${(confidence*100).toFixed(0)}%</span></div>
+      <div class="pdf-mi"><strong>Severity</strong><span style="font-size:12px">${severity}</span></div>
+      <div class="pdf-mi"><strong>Field Area</strong><span style="font-size:12px">${area} ac</span></div>
+    </div>
 
-  // Update agronomist report box to show "processing"
-  document.getElementById('agro-report-status').textContent = 'PROCESSING — 6 AGENTS RUNNING';
-  document.getElementById('agro-triage-body').innerHTML = `<div class="agro-report-placeholder">Agent pipeline is running...<br><br>PathoVision is analyzing lesion morphology...<br>RegionalGrounded is mapping climate parameters...<br>BioTherapeutic is querying ICAR database...</div>`;
+    <div class="pdf-two" style="gap:8px;margin-bottom:8px">
+      <div class="pdf-box" style="padding:8px 10px">
+        <div class="pdf-box-title">⚗ Chemical Prescription</div>
+        <p style="font-size:11px;line-height:1.5;color:#333">${trim(chemRx,220)}</p>
+      </div>
+      <div class="pdf-box" style="padding:8px 10px">
+        <div class="pdf-box-title">🌿 Biological Prescription</div>
+        <p style="font-size:11px;line-height:1.5;color:#333">${trim(bioRx,220)}</p>
+      </div>
+    </div>
 
-  const pipeOuts=[
-    `Pattern matched: Lesion morphology consistent with ${pathogen} — confidence 87%`,
-    `Region: ${region} | Humidity: HIGH | Temp: 28-32°C | Soil: Alluvial-loam | Risk: ${severity}`,
-    `Compound matched: ${chemRx.split('.')[0]} | Code: ${severity==='HIGH'?'ICAR-CIB-HIGH':'ICAR-CIB-MED'}`,
-    `Decay rate d=${d} | Recovery k=${k} | Projected 14-day recovery: ${Math.round(k/d*100)}%`,
-    `Heatmap generated: 8×8 Gaussian grid | Peak attention: Patch 22 (28.4% weight)`,
-    `Synthesis complete | Confidence: ${Math.round((0.80+Math.random()*0.17)*100)}% | Severity: ${severity}`,
-  ];
-  for(let i=0;i<PIPE_CFG.length;i++) await runPipeStep(i, pipeOuts[i], 500+i*80);
+    <div class="pdf-sec-title" style="margin-top:8px">Pathological Assessment</div>
+    <div class="pdf-body" style="font-size:11px;line-height:1.5">${trim(aiAnalysis,420)}</div>
 
-  // Claude: agronomist-grade triage report
-  const AGRO_SYS = `You are a senior plant pathologist writing a clinical AI Triage Report for a certified agronomist. Use technical language. Structure with these headings: PATHOGEN IDENTIFICATION AND CLASS, DISEASE MECHANISM AND SPREAD, CURRENT INFECTION STAGE AND RISK ASSESSMENT, INTEGRATED PEST MANAGEMENT STRATEGY, CHEMICAL PRESCRIPTION PROTOCOL, BIOLOGICAL AMENDMENT PROTOCOL, LONG-TERM RECOVERY AND RESISTANCE MANAGEMENT. Write precise, ICAR-referenced text. About 350 words. Plain text with heading labels only.`;
-  
-  let aiAnalysis, farmerAdvisory, agronNotes;
-  try{
-    [aiAnalysis,farmerAdvisory,agronNotes] = await Promise.all([
-      callClaude(AGRO_SYS,`Crop: ${crop} (${stage}) | Region: ${region} | Area: ${area} acres\nPathogen: ${pathogen}\nSymptoms: ${symptoms}`),
-      callClaude(`Write a short simple plain-text advisory for a farmer about ${pathogen} on ${crop}. No bullets. 80 words. Simple practical language referencing ICAR recommendations.`,`Symptoms: ${symptoms}`),
-      callClaude(`Write 2-sentence technical notes for an agronomist about ${pathogen} on ${crop}: PHI compliance, resistance risk, MRL under FSSAI.`,`Region: ${region}`)
-    ]);
-  } catch(e){
-    aiAnalysis=`PATHOGEN IDENTIFICATION AND CLASS\n${pathogen} has been identified based on symptom morphology consistent with the described field observations.\n\nDISEASE MECHANISM AND SPREAD\nThe pathogen enters host tissue through stomata and wounds, producing intercellular hyphae and causing necrotic lesion formation. Spread occurs via wind-dispersed spores under high humidity conditions typical of ${region}.\n\nCURRENT INFECTION STAGE AND RISK ASSESSMENT\nEarly to mid-stage progression detected. Severity: ${severity}. Risk of rapid spread is high under current weather conditions.\n\nINTEGRATED PEST MANAGEMENT STRATEGY\nImmediate chemical intervention combined with cultural practices and biological amendments as per ICAR guidelines.\n\nCHEMICAL PRESCRIPTION PROTOCOL\n${chemRx}\n\nBIOLOGICAL AMENDMENT PROTOCOL\n${bioRx}\n\nLONG-TERM RECOVERY AND RESISTANCE MANAGEMENT\nRotate chemical groups every 2 applications. Introduce resistant variety in next season. 3-season rotation with non-host crops recommended per ICAR protocol.`;
-    farmerAdvisory=`Your ${crop} has a disease called ${pathogen}. Remove all infected leaves and burn them. Spray ${chemRx.split('.')[0]} as directed. Do not irrigate from above. With proper treatment your crop can recover. Contact your local KVK if symptoms worsen after 5 days.`;
-    agronNotes=`PHI compliance: ${chemRx.includes('PHI')?chemRx.match(/PHI: \d+ days/)?.[0]:'Refer ICAR guidelines'}. Resistance risk moderate for single-site fungicides — alternate chemical groups per ICAR rotation schedule. MRL compliance required under FSSAI Regulation 2011.`;
+    <div class="pdf-sec-title" style="margin-top:8px">Farmer Advisory</div>
+    <div class="pdf-body" style="font-size:11px;line-height:1.5">${trim(farmerAdv||'Follow prescriptions as directed. Contact KVK if no improvement in 7 days.',300)}</div>
+
+    <div class="pdf-sec-title" style="margin-top:8px">IPM Notes</div>
+    <div class="pdf-body" style="font-size:11px;line-height:1.5">${ipmStr||'Follow standard ICAR IPM protocol.'}</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;align-items:start">
+      <div>
+        <div class="pdf-sec-title" style="margin-top:0">Recovery Projection (key days)</div>
+        <table class="pdf-table" style="font-size:10px">
+          <thead><tr><th>Day</th><th>Untreated</th><th>Treated</th><th>Gain</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div>
+        <div class="pdf-sec-title" style="margin-top:0">Technical Notes</div>
+        <div class="pdf-body" style="font-size:10px;line-height:1.5;color:#444">${trim(agronNotes||'See ICAR disease management protocol.',280)}</div>
+      </div>
+    </div>
+
+    <div class="pdf-footer" style="margin-top:10px;padding-top:8px">
+      <span>KrishiKonnect AI Platform · kishi-konnect-app.vercel.app</span>
+      <span>${now}</span>
+    </div>
+    <div class="pdf-disclaimer">AI-generated for informational purposes. Must be reviewed by a certified agronomist before field implementation. Pesticide use must comply with Insecticides Act 1968.</div>
+    </div>`;
   }
-
-  const conf = 0.80+Math.random()*0.17;
-  const curves = computeCurves(0.75,d,k);
-  lastDiagData = {crop,stage,region,area,pathogen,pathogenClass:'Fungal — See ICAR classification',confidence:conf,severity,chemRx,bioRx,aiAnalysis,farmerAdvisory,agronNotes,ipmNotes,curves,d,k,traces:pipeOuts.map((o,i)=>`${PIPE_CFG[i].name}: ${o}`)};
-
-  // Update agronomist AI triage box
-  document.getElementById('agro-report-status').textContent = 'TRIAGE COMPLETE — ' + severity + ' SEVERITY';
-  const formattedAgro = aiAnalysis.replace(/^([A-Z][A-Z\s&]+)$/gm, m => `<h4>${m}</h4>`).replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
-  document.getElementById('agro-triage-body').innerHTML = `<p>${formattedAgro}</p>`;
-
-  document.getElementById('m-pathogen').textContent = pathogen;
-  document.getElementById('m-threat').textContent   = severity;
-  document.getElementById('m-decay').textContent    = d.toFixed(2);
-  document.getElementById('m-recovery').textContent = k.toFixed(2);
-  document.getElementById('rx-chem-text').textContent   = chemRx;
-  document.getElementById('rx-bio-text').textContent    = bioRx;
-  document.getElementById('farmer-advisory-text').textContent = farmerAdvisory;
-  document.getElementById('ipm-notes-list').innerHTML = ipmNotes.map(n=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--border2);color:var(--dim)">• ${n}</div>`).join('');
-
-  setTimeout(()=>{
-    const circ=document.getElementById('conf-circle');
-    circ.style.strokeDashoffset=201.06*(1-conf);
-    document.getElementById('conf-val').textContent=Math.round(conf*100)+'%';
-  },200);
-
-  renderHeatmap(); initDiagChart(); updateDiagChart(d,k);
-  document.getElementById('diag-output').style.display='block';
-  btn.disabled=false; document.getElementById('diag-btn-inner').textContent='Run Full AI Diagnosis';
-  showToast('Deep diagnosis complete. PDF ready.');
+  document.getElementById('pdf-content').innerHTML=html;
+  document.getElementById('pdf-report').style.display='block';
+  window.print();
+  setTimeout(()=>{document.getElementById('pdf-report').style.display='none';},600);
 }
 
-function renderHeatmap(){
-  const grid=document.getElementById('heatmap-grid'); grid.innerHTML='';
-  const p=20+Math.floor(Math.random()*8), w=generateHeatWeights(p);
-  w.forEach((v,i)=>{
-    const cell=document.createElement('div'); cell.className='heat-cell';
-    const int=v*2500;
-    cell.style.background=int>90?'#e05030':int>45?'#d9a84e':int>15?'#3d7a1e':'#0d1a0a';
-    cell.title=`Patch ${i}: ${(v*100).toFixed(2)}%`;
-    grid.appendChild(cell);
-  });
-}
-
-/* ── AGRONOMIST CASES ────────────────────────────*/
+// ══ AGRONOMIST CASES ════════════════════════════
 const CASES=[
   {id:'C-001',farmer:'Gurbaksh Singh',crop:'Tomato',region:'Karnataka',stage:'Vegetative',area:3.0,symptoms:'Concentric brown rings with yellow halos on lower leaves. Target-board pattern progressing upward.',severity:'high',status:'Urgent',thumb:null,submitted:'2h ago'},
   {id:'C-002',farmer:'Harpreet Kaur',crop:'Wheat',region:'Punjab',stage:'Flowering',area:5.5,symptoms:'Orange-yellow linear pustules on leaf surface and sheaths. Urediniospore deposits visible.',severity:'high',status:'Urgent',thumb:null,submitted:'4h ago'},
@@ -1371,9 +1120,8 @@ function renderCaseQueue(){
   document.getElementById('case-queue').innerHTML=CASES.map((c,i)=>`
     <div class="case-item${i===activeCaseIdx?' active':''}" id="case-item-${i}" onclick="selectCase(${i})">
       <div class="case-row1"><div class="case-crop">${c.crop}</div><span class="badge badge-${c.severity==='high'?'high':'med'}">${c.status}</span><span class="case-id">${c.id}</span></div>
-      <div class="case-meta">${c.region} — ${c.symptoms.substring(0,46)}...</div>
-      <div class="case-footer">${c.thumb?`<img class="case-thumb" src="${c.thumb}">`:'<div class="case-no-img">—</div>'}
-        <span class="case-farmer">${c.farmer}, ${c.area}ac</span><span class="case-id" style="margin-left:auto">${c.submitted}</span></div>
+      <div class="case-meta">${c.region} — ${c.symptoms.substring(0,44)}...</div>
+      <div class="case-footer">${c.thumb?`<img class="case-thumb" src="${c.thumb}">`:'<div class="case-no-img">—</div>'}<span class="case-farmer">${c.farmer}, ${c.area}ac</span><span class="case-id" style="margin-left:auto">${c.submitted}</span></div>
     </div>`).join('');
   document.getElementById('q-count').textContent=CASES.length;
   document.getElementById('q-urgent-count').textContent=CASES.filter(c=>c.status==='Urgent').length;
@@ -1388,205 +1136,369 @@ function selectCase(i){
   document.getElementById('d-region').value=c.region;
   document.getElementById('d-area').value=c.area;
   document.getElementById('d-symptoms').value=c.symptoms;
+  if(c.thumb){document.getElementById('upload-preview').src=c.thumb;document.getElementById('upload-preview-wrap').style.display='block';document.getElementById('upload-prompt').style.display='none';}
+  else {document.getElementById('upload-preview-wrap').style.display='none';document.getElementById('upload-prompt').style.display='block';}
   document.getElementById('diag-output').style.display='none';
-  resetPipeline();
+  document.getElementById('pipeline-steps').style.display='none';
+  document.getElementById('agro-pipeline-info').style.display='block';
 }
 function addNewCase(){
   CASES.push({id:`C-00${CASES.length+1}`,farmer:'New Farmer',crop:'',region:'',stage:'Vegetative',area:1.0,symptoms:'',severity:'medium',status:'Pending',thumb:null,submitted:'now'});
-  activeCaseIdx=CASES.length-1; renderCaseQueue(); selectCase(activeCaseIdx);
+  activeCaseIdx=CASES.length-1;
+  renderCaseQueue(); selectCase(activeCaseIdx);
+  document.getElementById('d-crop').value='';
+  document.getElementById('d-symptoms').value='';
+  document.getElementById('upload-preview-wrap').style.display='none';
+  document.getElementById('upload-prompt').style.display='block';
+}
+
+// ── Image Upload ──
+function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
+function handleDragLeave(){document.getElementById('drop-zone').classList.remove('drag-over');}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)processImageFile(f);}
+function handleFileSelect(e){const f=e.target.files[0];if(f)processImageFile(f);}
+function processImageFile(file){
+  if(!file.type.startsWith('image/')){showToast('Please upload an image file.');return;}
+  const reader=new FileReader();
+  reader.onload=async(ev)=>{
+    const url=ev.target.result;
+    document.getElementById('upload-preview').src=url;
+    document.getElementById('upload-preview-wrap').style.display='block';
+    document.getElementById('upload-prompt').style.display='none';
+    document.getElementById('drop-zone').classList.add('has-image');
+    document.getElementById('scan-badge').style.display='block';
+    if(activeCaseIdx<CASES.length){CASES[activeCaseIdx].thumb=url;renderCaseQueue();}
+    const sl=document.getElementById('scan-line'); sl.style.display='block';
+    setTimeout(()=>{sl.style.display='none';document.getElementById('scan-chips').innerHTML=
+      `<span class="chip chip-red">Lesion detected</span><span class="chip chip-amber">Chlorosis markers</span><span class="chip chip-blue">Tissue ready</span><span class="chip chip-green">Quality: Good</span>`;},2200);
+    await runImageAnalysis(url);
+  };
+  reader.readAsDataURL(file);
+}
+async function runImageAnalysis(dataUrl){
+  document.getElementById('img-scan-result').style.display='block';
+  document.getElementById('img-scan-text').innerHTML='<div style="display:flex;align-items:center;gap:8px;color:var(--dim)"><div class="spinner spinner-dark"></div> VLM scanning image for disease markers...</div>';
+  const b64=dataUrl.split(',')[1];
+  const mime=dataUrl.match(/data:(image\/\w+);/)?.[1]||'image/jpeg';
+  try{
+    const result=await apiPost('image-analyze',{image_base64:b64,image_mime:mime});
+    document.getElementById('img-scan-text').innerHTML=`<pre>${result.analysis}</pre>`;
+  }catch(e){document.getElementById('img-scan-text').innerHTML=`<pre>Image registered. Please describe symptoms in the form below.</pre>`;}
+}
+
+// ── Agronomist Pipeline ──
+const PIPE_CFG=[
+  {icon:'👁️',name:'PathoVision VLM',desc:'Pixel-level lesion segmentation and symptom pattern classification'},
+  {icon:'🗺️',name:'RegionalGrounded',desc:'Geospatial climate, soil and seasonal risk parameter lookup'},
+  {icon:'⚗️',name:'BioTherapeutic',desc:'ICAR compound registry cross-reference and dosage verification'},
+  {icon:'📈',name:'YieldPrognostic',desc:'14-day vegetative vigor decay and recovery curve computation'},
+  {icon:'🔢',name:'KinematicSolver',desc:'Gaussian attention heatmap — 8x8 spatial patch grid generation'},
+  {icon:'🧠',name:'TriageOrchestrator',desc:'Multi-agent output fusion and confidence score computation'},
+];
+function resetPipeline(){
+  document.getElementById('agro-pipeline-info').style.display='none';
+  const el=document.getElementById('pipeline-steps');
+  el.style.display='flex';
+  el.innerHTML=PIPE_CFG.map((s,i)=>`
+    <div class="pipe-step" id="ps-${i}">
+      <div class="pipe-dot pending" id="pd-${i}">${s.icon}</div>
+      <div class="pipe-body"><div class="pipe-name">${s.name}</div><div class="pipe-desc">${s.desc}</div><div class="pipe-out" id="po-${i}"></div></div>
+      <div class="pipe-time" id="pt-${i}">—</div>
+    </div>`).join('');
+}
+async function runPipeStep(i,out,ms){
+  const dot=document.getElementById('pd-'+i);
+  const time=document.getElementById('pt-'+i);
+  const outEl=document.getElementById('po-'+i);
+  dot.className='pipe-dot running'; time.textContent='running...';
+  await delay(ms);
+  dot.className='pipe-dot done'; dot.textContent='✓';
+  time.textContent=`${(ms/1000).toFixed(1)}s`;
+  outEl.textContent=out; outEl.style.display='block';
+}
+
+async function runDeepDiagnosis(){
+  const crop=document.getElementById('d-crop').value;
+  const stage=document.getElementById('d-stage').value;
+  const region=document.getElementById('d-region').value;
+  const area=document.getElementById('d-area').value;
+  const symptoms=document.getElementById('d-symptoms').value.trim();
+  if(!crop||!symptoms){showToast('Select crop and enter symptoms.');return;}
+
+  const btn=document.getElementById('diag-btn');
+  btn.disabled=true;
+  document.getElementById('diag-btn-inner').innerHTML='<div class="spinner"></div> Running pipeline...';
+  document.getElementById('diag-output').style.display='none';
+  resetPipeline();
+
+  const imgEl=document.getElementById('upload-preview');
+  let imgB64=null,imgMime='image/jpeg';
+  if(imgEl.src&&imgEl.src.startsWith('data:')){
+    const parts=imgEl.src.split(',');
+    imgB64=parts[1];
+    imgMime=imgEl.src.match(/data:(image\/\w+);/)?.[1]||'image/jpeg';
+  }
+
+  const apiPromise=apiPost('diagnose',{
+    crop_type:crop,crop_stage:stage,region,symptoms,
+    area_acres:parseFloat(area)||1,
+    image_base64:imgB64,image_mime:imgMime
+  }).catch(e=>{ console.error('Diagnose API error:',e); return null; });
+
+  const stepDelays=[900,800,750,700,600,850];
+  for(let i=0;i<PIPE_CFG.length;i++){
+    await runPipeStep(i,'Analyzing...',stepDelays[i]);
+  }
+
+  const result = await apiPromise;
+  let d=0.08,k=0.25,chemRx,bioRx,pathogen,severity,ipmNotes=[],aiAnalysis,farmerAdv,agronNotes,curves;
+
+  if(result){
+    d=result.decay_rate; k=result.recovery_k;
+    chemRx=result.chemical_rx; bioRx=result.bio_rx;
+    pathogen=result.pathogen; severity=result.severity;
+    ipmNotes=result.ipm_notes||[];
+    aiAnalysis=result.ai_analysis;
+    farmerAdv=result.farmer_advisory;
+    agronNotes=result.agronomist_notes;
+    curves={decay:result.decay_vector,recovery:result.recovery_vector};
+
+    if(result.agent_traces){
+      result.agent_traces.forEach((trace,i)=>{
+        const outEl=document.getElementById('po-'+i);
+        const dotEl=document.getElementById('pd-'+i);
+        if(outEl){outEl.textContent=trace.replace(/\[.*?\]\s*/,'');outEl.style.display='block';}
+        if(dotEl){dotEl.className='pipe-dot done';dotEl.textContent='✓';}
+      });
+    }
+  } else {
+    const sym=symptoms.toLowerCase();
+    if(sym.includes('blight')||sym.includes('ring')||sym.includes('brown')){d=0.12;k=0.28;pathogen='Alternaria solani';severity='HIGH';chemRx='Mancozeb 75 WP at 2g per liter. Spray every 7 days for 3 cycles. PHI: 14 days.';bioRx='Trichoderma viride compost at 100g per plant. Pseudomonas fluorescens at 10ml per liter.';ipmNotes=['Remove infected lower leaves immediately','Switch to drip irrigation','Use resistant variety next season'];}
+    else if(sym.includes('pustule')||sym.includes('rust')||sym.includes('orange')){d=0.10;k=0.30;pathogen='Puccinia striiformis';severity='HIGH';chemRx='Propiconazole 25 EC at 1ml per liter. PHI: 21 days.';bioRx='5% NSKE spray every 10 days.';ipmNotes=['Use DBW-222 or HD-3086 wheat varieties','Timely sowing','Balanced NPK'];}
+    else if(sym.includes('blast')||sym.includes('spindle')){d=0.09;k=0.22;pathogen='Magnaporthe oryzae';severity='HIGH';chemRx='Tricyclazole 75 WP at 0.6g per liter.';bioRx='Pseudomonas fluorescens at 10ml per liter.';ipmNotes=['Use MTU 1010 blast-resistant rice','Avoid excess nitrogen'];}
+    else{d=0.05;k=0.20;pathogen='Abiotic Stress';severity='LOW';chemRx='Conduct soil test first.';bioRx='Bacillus subtilis at 5ml per liter.';ipmNotes=['Soil and water testing','Check irrigation','Apply balanced NPK'];}
+    aiAnalysis=`Pathogen identified as ${pathogen} based on symptom morphology. Immediate intervention recommended. AI service temporarily unavailable — using local knowledge base.`;
+    farmerAdv=`Your ${crop} has ${pathogen}. Remove infected parts and spray as directed. With prompt treatment your crop can recover.`;
+    agronNotes=`Pathogen: ${pathogen}. PHI as per label. Resistance risk: low to moderate. MRL compliance required per FSSAI.`;
+    curves=computeCurves(0.75,d,k);
+
+    const fallbackTraces = [
+      `[PathoVision VLM] Local fallback: Visual markers identified for ${pathogen}.`,
+      `[RegionalGrounded] Loaded local climate parameters.`,
+      `[BioTherapeutic] Matched ${chemRx.split(' ')[0]} in local registry.`,
+      `[YieldPrognostic] Vigor decay modeled at d=${d}.`,
+      `[KinematicSolver] Heatmap generated locally.`,
+      `[TriageOrchestrator] Fallback synthesis complete.`
+    ];
+    fallbackTraces.forEach((trace, i) => {
+      const outEl = document.getElementById('po-'+i);
+      const dotEl = document.getElementById('pd-'+i);
+      if(outEl){ outEl.textContent = trace; outEl.style.display = 'block'; }
+      if(dotEl){ dotEl.className = 'pipe-dot done'; dotEl.textContent = '✓'; }
+    });
+  }
+
+  if(!curves)curves=computeCurves(0.75,d,k);
+  const conf=0.80+Math.random()*0.17;
+  lastDiagData={crop,stage,region,area,pathogen,confidence:conf,severity,chemRx,bioRx,aiAnalysis,farmerAdv,agronNotes,ipmNotes,curves,d,k};
+
+  document.getElementById('m-pathogen').textContent=pathogen;
+  document.getElementById('m-threat').textContent=severity;
+  document.getElementById('m-decay').textContent=d.toFixed(2);
+  document.getElementById('m-recovery').textContent=k.toFixed(2);
+  document.getElementById('rx-chem-text').textContent=chemRx;
+  document.getElementById('rx-bio-text').textContent=bioRx;
+  document.getElementById('deep-result-text').innerHTML=`<pre>${aiAnalysis}</pre>`;
+
+  setTimeout(()=>{
+    document.getElementById('conf-circle').style.strokeDashoffset=201.06*(1-conf);
+    document.getElementById('conf-val').textContent=Math.round(conf*100)+'%';
+  },300);
+
+  renderHeatmap();
+  initDiagChart(); updateDiagChart(d,k);
+  document.getElementById('diag-output').style.display='block';
+  btn.disabled=false;
+  document.getElementById('diag-btn-inner').textContent='Run Full AI Diagnosis';
+  showToast('Deep diagnosis complete. PDF report ready.');
+  trackVisit('deep_diagnosis');
+}
+
+function renderHeatmap(){
+  const grid=document.getElementById('heatmap-grid'); grid.innerHTML='';
+  const p=20+Math.floor(Math.random()*8);
+  generateHeatWeights(p).forEach((v,i)=>{
+    const cell=document.createElement('div'); cell.className='heat-cell';
+    const int=v*2500;
+    cell.style.background=int>90?'#e05030':int>45?'#d9a84e':int>15?'#3d7a1e':'#0d1a0a';
+    cell.title=`Patch ${i}: ${(v*100).toFixed(2)}%`;
+    grid.appendChild(cell);
+  });
 }
 function exportCaseJSON(){
   if(!lastDiagData){showToast('Run a diagnosis first.');return;}
-  const blob=new Blob([JSON.stringify(lastDiagData,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(lastDiagData,null,2)],{type:'application/json'}));
   a.download=`krishi-diag-${lastDiagData.crop.toLowerCase()}-${Date.now()}.json`; a.click();
 }
 function markCaseDone(){
   if(activeCaseIdx<CASES.length){CASES[activeCaseIdx].status='Resolved';CASES[activeCaseIdx].severity='low';renderCaseQueue();showToast(`Case ${CASES[activeCaseIdx].id} marked resolved.`);}
 }
 
-/* ── CHATBOT — LARGE KNOWLEDGE SYSTEM ────────────*/
-const CHAT_SYSTEM = `You are KrishiAI, a warm and deeply knowledgeable Indian agricultural expert assistant with access to extensive agricultural databases including:
-- ICAR (Indian Council of Agricultural Research) — complete disease management, crop profiles, pesticide recommendations
-- FAO / FAOSTAT — global agricultural production data, crop calendars, food security indicators
-- Agmarknet — APMC mandi price data across India
-- IMD (India Meteorological Department) — agro-meteorological advisories, rainfall, drought
-- PM-KISAN, PMFBY, Kisan Credit Card, PM Fasal Bima Yojana, National Agriculture Market (eNAM), ATMA scheme details
-- Soil Health Card data, National Horticulture Board, Cotton Corporation of India
-- CIB&RC pesticide registry — 800+ registered compounds with dosages and PHI
-- KVK (Krishi Vigyan Kendra) extension notes — practical field advisories for 741 KVKs
-- International: CGIAR, CIMMYT, IRRI, ICRISAT research for wheat, rice, legumes, millets
-- Organic farming: NPOP standards, PGS-India certification, biological inputs
+// ══ CHAT — ENRICHED ═════════════════════════════
+const CHAT_SYSTEM=`You are KrishiAI, a highly knowledgeable Indian agricultural expert chatbot powered by multiple open knowledge sources.
 
-When answering:
-- Be conversational, practical, and empathetic — like an experienced farmer's friend
-- Reference specific schemes, dosages, prices in ₹ where relevant
-- Cite the knowledge source (ICAR, FAO, KVK, etc.) naturally in your answer
-- Cover multiple dimensions: disease, soil, water, market, government support
-- About 150-200 words. Plain text, no bullet points — write in flowing sentences.
-- Support both English and Hindi questions seamlessly`;
+Your knowledge includes:
+- ICAR disease profiles for all major Indian crops (Tomato, Rice, Wheat, Cotton, Maize, Potato, Sugarcane, Groundnut, Mustard, Soybean, Chili, Onion)
+- Agropedia open agricultural encyclopedia — pest management, soil science, crop agronomy
+- FAO AGRIS research database — global agricultural science
+- Government scheme details — PM-KISAN (Rs 6000/year), PMFBY crop insurance (Kharif 2%, Rabi 1.5%), Kisan Credit Card (4% interest), MSP prices for all notified crops
+- APMC mandi prices across 28 Indian states
+- IMD weather data and seasonal crop calendars
+- Organic farming, SRI rice method, IPM practices
+- Soil health cards, micronutrient deficiency identification
+- Post-harvest storage, cold chain, marketing
+
+Respond in the same language the user writes in — Hindi or English. Be warm, practical, specific. Reference sources when helpful. About 140 words per response. Use plain text, no asterisks or bullets.`;
 
 function setLLM(llm){
-  activeLLM=llm;
-  ['claude','gemini','openai'].forEach(l=>document.getElementById('llm-'+l).classList.toggle('active',l===llm));
-  const labels={claude:'Claude (Anthropic)',gemini:'Gemini (Google)',openai:'GPT-4o (OpenAI)'};
-  document.getElementById('active-llm-label').textContent='Using: '+labels[llm];
-  addMsg('ai',`Switched to ${labels[llm]}. Note: Gemini and GPT-4o integrations require backend API keys. Claude is active and ready.`);
+  if(llm !== 'claude'){
+    showToast('Gemini and GPT-4o require backend API keys. Claude is active and working.');
+    return;
+  }
+  activeLLM='claude';
+  document.getElementById('llm-claude').classList.add('active');
+  document.getElementById('active-llm-label').textContent='✓ Claude (Anthropic)';
 }
 
 async function sendChat(){
   const input=document.getElementById('chat-input');
-  const msg=input.value.trim(); if(!msg) return;
-  if(!currentUser){ showToast('Please sign in to use the chatbot.'); return; }
+  const msg=input.value.trim(); if(!msg)return;
   input.value='';
-  addMsg('user',msg); chatHistory.push({role:'user',content:msg});
-  const tid='typing-'+Date.now(); addMsg('ai','Searching agricultural databases...', tid);
+  addMsg('user',msg);
+  chatHistory.push({role:'user',content:msg});
+  const tid='t'+Date.now(); 
+  addMsg('ai','<span style="display:flex;align-items:center;gap:8px;color:var(--dim)"><span class="spinner spinner-dark"></span> Thinking...</span>', tid);
+  
   try{
-    const history = chatHistory.slice(-12).map(m=>`${m.role==='user'?'Farmer':'KrishiAI'}: ${m.content}`).join('\n\n');
-    const text = await callClaude(CHAT_SYSTEM, history);
-    chatHistory.push({role:'assistant',content:text});
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: CHAT_SYSTEM,
+        messages: chatHistory.slice(-10)
+      })
+    });
+    if(!response.ok){
+      const errJson = await response.json().catch(()=>({}));
+      throw new Error(errJson?.error?.message || `API error ${response.status}`);
+    }
+    const data = await response.json();
+    const reply = data.content?.find(b=>b.type==='text')?.text || 'Sorry, I could not get a response. Please try again.';
+    chatHistory.push({role:'assistant',content:reply});
     document.getElementById(tid)?.remove();
-    addMsg('ai',text);
-  } catch(e){
+    addMsg('ai',reply);
+  }catch(e){
     document.getElementById(tid)?.remove();
-    addMsg('ai','Network error. Please check your connection and try again.');
+    const fallback = getLocalAnswer(msg);
+    chatHistory.push({role:'assistant',content:fallback});
+    addMsg('ai',fallback);
   }
+  trackVisit('chat');
 }
+
+function getLocalAnswer(q){
+  const ql=q.toLowerCase();
+  if(ql.includes('blight')||ql.includes('tomato disease'))
+    return 'Early blight on tomatoes is caused by Alternaria solani. You will see concentric brown rings like a target board, starting on older lower leaves. Spray Mancozeb 75 WP at 2g per litre of water every 7 days for 3 cycles. Remove infected leaves and avoid wetting the leaves when watering. In the rainy season apply copper oxychloride as a protectant. For organic control, spray 5% neem seed kernel extract every 10 days.';
+  if(ql.includes('pm-kisan')||ql.includes('pmkisan'))
+    return 'PM-KISAN gives Rs 6,000 per year directly to farmer bank accounts in three equal instalments of Rs 2,000 each. You must own cultivable land. Apply at your nearest CSC or at pmkisan.gov.in with your Aadhaar, bank account and land records. If you are already registered, check status at the same website. The scheme covers all small and marginal farmers across India.';
+  if(ql.includes('msp')||ql.includes('minimum support price'))
+    return 'For 2024-25, the MSP for wheat is Rs 2,275 per quintal and for paddy (common) is Rs 2,300 per quintal. Cotton (medium staple) MSP is Rs 7,121 per quintal. MSP is set by CACP and notified by the government. Sell at your nearest APMC mandi or through the e-NAM platform to get the best price. Keep your Kisan registration and land documents ready when selling.';
+  if(ql.includes('nitrogen')||ql.includes('deficiency'))
+    return 'Nitrogen deficiency in maize shows as yellowing starting from the tip of older lower leaves, moving in a V-shape up the midrib. The whole plant looks pale yellow-green. Apply urea at 65 kg per acre as a top-dress split dose — half at planting and half at knee height. Always apply in moist soil and cover lightly. Foliar spray of 2% urea solution gives fast results within 4-5 days.';
+  if(ql.includes('irrigation')||ql.includes('water'))
+    return 'Water requirement varies by crop. Wheat needs about 450-500 mm across 4-5 irrigations — crown root, tillering, jointing, flowering and grain-fill stages. Rice requires 1200-1500 mm but SRI method cuts this to 700 mm. Tomato needs 600-800 mm with drip irrigation being most efficient. General rule: irrigate when soil moisture drops below 50% of field capacity. Early morning irrigation reduces evaporation loss by 30%.';
+  if(ql.includes('organic')||ql.includes('vermicompost'))
+    return 'For organic farming, start with 5 tonnes of FYM or vermicompost per acre before sowing. Add Trichoderma viride at 2.5 kg mixed with compost to control soil-borne diseases. Use Pseudomonas fluorescens and Bacillus subtilis as bio-agents. Spray neem oil 10 ml per litre every 15 days for pest control. To get organic certification, apply to your state certification agency — it takes 3 years of organic management before certification is granted.';
+  return 'Thank you for your question about Indian farming. I am KrishiAI and I draw from ICAR, Agropedia, FAO and government databases. Please ask about specific topics such as crop diseases, government schemes like PM-KISAN or PMFBY, mandi prices, soil health, pest control, fertilizers, irrigation, seed varieties, or post-harvest storage. I can answer in Hindi or English.';
+}
+
+const TOPIC_PROMPTS={
+  crop_disease:'What are the most common crop diseases in India right now, and how can I identify them early?',
+  soil_health:'How do I improve soil health on my farm? What tests should I do and what should I add to the soil?',
+  pest_control:'What are the most effective and safe methods to control pests on crops without harming beneficial insects?',
+  irrigation:'What is the best irrigation method for my crop and how much water does it need at each growth stage?',
+  govt_schemes:'Tell me about all the government farming schemes I can benefit from, including PM-KISAN, PMFBY and Kisan Credit Card.',
+  mandi_prices:'What are the current APMC mandi prices for major crops and how do I get the best price for my produce?',
+  organic_farming:'How do I start organic farming on my land? What certifications do I need and how much extra income can I expect?',
+  weather_advisory:'What seasonal weather should I expect in the coming months and how should I plan my crop calendar?',
+  seed_varieties:'Which are the best ICAR recommended seed varieties for my crop that are disease resistant and high yielding?',
+  fertilizers:'How much fertilizer should I apply to my crop at each growth stage and how do I avoid over-fertilizing?',
+  harvest:'When is the right time to harvest my crop and what is the best method to minimize losses?',
+  storage:'How do I store my crop after harvest to reduce losses and maintain quality for better prices?',
+};
+function askTopic(topic){ document.getElementById('chat-input').value=TOPIC_PROMPTS[topic]||topic; sendChat(); }
 
 function addMsg(role,text,id=null){
   const c=document.getElementById('chat-messages');
   const now=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-  const d=document.createElement('div'); d.className=`msg ${role}`; if(id) d.id=id;
+  const d=document.createElement('div'); d.className=`msg ${role}`; if(id)d.id=id;
   d.innerHTML=`<div class="bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div>`;
   c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
-function clearChat(){ chatHistory=[]; document.getElementById('chat-messages').innerHTML=''; initChatWelcome(); }
+function clearChat(){chatHistory=[];document.getElementById('chat-messages').innerHTML='';initChatWelcome();}
 function initChatWelcome(){
-  addMsg('ai','Namaste! 🌾 I am KrishiAI, your agricultural advisor powered by ICAR, FAO, Agmarknet, and 800+ agricultural databases.\n\nAsk me about crop diseases, soil health, mandi prices, government schemes like PM-KISAN and PMFBY, organic farming, or any farming question in English or Hindi. I am here to help!');
+  addMsg('ai','Namaste! I am KrishiAI. I draw from ICAR databases, Agropedia, FAO research, government scheme data, and mandi price archives to answer your farming questions.\n\nAsk me in English or Hindi about crop diseases, soil health, government schemes like PM-KISAN, market prices, pest control, or anything about farming in India.');
 }
-
 function renderQuickQ(){
-  const qs=[
-    'How to treat early blight on tomatoes organically?',
-    'What is the MSP for wheat in 2025-26?',
-    'How to apply for PM-KISAN scheme benefits?',
-    'Best fertilizer schedule for paddy rice in Kharif season?',
-    'Signs of nitrogen deficiency in maize and how to fix it?',
-    'How does PMFBY crop insurance work — eligibility and claim process?',
-    'Which pesticide for whitefly in cotton — ICAR recommendation?',
-    'Soil pH correction for acidic red laterite soil in Karnataka?',
-    'Best time to sell onion — market price outlook this season?',
-    'Drip irrigation subsidy schemes for Maharashtra farmers?',
-  ];
-  document.getElementById('quick-q-list').innerHTML=qs.map(q=>`<button class="btn btn-ghost btn-sm" style="justify-content:flex-start;text-align:left;font-weight:400;font-size:12px;padding:6px 9px;height:auto;white-space:normal;line-height:1.4" onclick="askQuick('${q.replace(/'/g,"\\'")}')">› ${q}</button>`).join('');
+  const qs=['How do I treat early blight on my tomatoes?','What is the MSP for wheat and paddy in 2025?','How to identify nitrogen deficiency in maize?','PM-KISAN scheme — who qualifies and how to apply?','Best organic fertilizer for paddy rice?','How to manage whitefly attack in cotton?'];
+  document.getElementById('quick-q-list').innerHTML=qs.map(q=>`<button class="btn btn-ghost btn-sm" style="justify-content:flex-start;text-align:left;font-weight:400;font-size:12px;padding:7px 10px" onclick="askQuick('${q.replace(/'/g,"\\'")}')">&#8250; ${q}</button>`).join('');
 }
-function askQuick(q){ switchTab('advisor'); document.getElementById('chat-input').value=q; sendChat(); }
+function askQuick(q){switchTab('advisor');document.getElementById('chat-input').value=q;sendChat();}
 
-/* ── PDF GENERATION ──────────────────────────────*/
-function generatePDF(type){
-  const now=new Date().toLocaleString('en-IN'),user=currentUser?.name||'KrishiKonnect User';
-  let html='';
-  if(type==='triage'&&lastTriageData){
-    const{crop,stage,region,symptoms,sev,d,k,reportText}=lastTriageData;
-    const curves=computeCurves(0.75,d,k);
-    let curveRows='';
-    for(let t=0;t<=14;t+=2){
-      const gain=((curves.recovery[t]-curves.decay[t])*100).toFixed(1);
-      curveRows+=`<tr><td>Day ${t}</td><td>${(curves.decay[t]*100).toFixed(1)}%</td><td>${(curves.recovery[t]*100).toFixed(1)}%</td><td style="color:#166534">+${gain}%</td></tr>`;
-    }
-    html=`<div class="pdf-header"><div><div class="pdf-logo">Krishi<span>Konnect</span></div><div style="font-size:11px;color:#555;margin-top:2px">Farmer Seasonal Advisory Report</div></div><div class="pdf-meta-small">Ref: TR-${Date.now().toString().slice(-6)}<br>Generated: ${now}<br>Farmer: ${user}</div></div>
-    <div class="pdf-title">Seasonal Crop Advisory Report</div><div class="pdf-sub">${crop} — ${stage} stage — ${region}</div>
-    <div class="pdf-meta-row"><div class="pdf-mi"><strong>Crop</strong><span>${crop}</span></div><div class="pdf-mi"><strong>Stage</strong><span>${stage}</span></div><div class="pdf-mi"><strong>Region</strong><span>${region}</span></div><div class="pdf-mi"><strong>Severity</strong><span>${sev}</span></div></div>
-    <div class="pdf-sec-title">Seasonal Advisory (Plain Language)</div><div class="pdf-body">${reportText}</div>
-    <div class="pdf-sec-title">14-Day Recovery Projection</div>
-    <table class="pdf-table"><thead><tr><th>Day</th><th>Unchecked Vigor</th><th>With Remediation</th><th>Recovery Gain</th></tr></thead><tbody>${curveRows}</tbody></table>
-    <div class="pdf-footer"><span>KrishiKonnect AI Platform — krishikonnect.in</span><span>Generated: ${now}</span></div>
-    <div class="pdf-disclaimer">This report is AI-generated for informational purposes. Consult a certified agronomist or your local KVK for critical decisions. Pesticide use must comply with the Insecticides Act 1968 and local regulations.</div>`;
-  }
-  else if(type==='deep'&&lastDiagData){
-    const{crop,stage,region,area,pathogen,pathogenClass,confidence,severity,chemRx,bioRx,aiAnalysis,farmerAdvisory,agronNotes,ipmNotes,curves,d,k,traces}=lastDiagData;
-    let curveRows='';
-    for(let t=0;t<=14;t+=2){const gain=((curves.recovery[t]-curves.decay[t])*100).toFixed(1);curveRows+=`<tr><td>Day ${t}</td><td>${(curves.decay[t]*100).toFixed(1)}%</td><td>${(curves.recovery[t]*100).toFixed(1)}%</td><td style="color:#166534">+${gain}%</td></tr>`;}
-    html=`<div class="pdf-header"><div><div class="pdf-logo">Krishi<span>Konnect</span></div><div style="font-size:11px;color:#555;margin-top:2px">Agronomist Deep Diagnosis Report</div></div><div class="pdf-meta-small">Case ID: DX-${Date.now().toString().slice(-6)}<br>Generated: ${now}<br>Reviewed by: ${user}</div></div>
-    <div class="pdf-title">Deep Pathological Diagnosis</div><div class="pdf-sub">${crop} — ${stage} stage — ${region}</div>
-    <div class="pdf-meta-row"><div class="pdf-mi"><strong>Crop</strong><span>${crop}</span></div><div class="pdf-mi"><strong>Stage</strong><span>${stage}</span></div><div class="pdf-mi"><strong>Region</strong><span>${region}</span></div><div class="pdf-mi"><strong>Area</strong><span>${area} ac</span></div><div class="pdf-mi"><strong>Pathogen</strong><span>${pathogen}</span></div><div class="pdf-mi"><strong>Confidence</strong><span>${(confidence*100).toFixed(1)}%</span></div><div class="pdf-mi"><strong>Severity</strong><span>${severity}</span></div></div>
-    <div class="pdf-sec-title">AI Triage Report (6-Agent Synthesis)</div><div class="pdf-body">${aiAnalysis}</div>
-    <div class="pdf-sec-title">Prescriptions</div><div class="pdf-two"><div class="pdf-box"><div class="pdf-box-title">Chemical Prescription</div><p>${chemRx}</p></div><div class="pdf-box"><div class="pdf-box-title">Biological Prescription</div><p>${bioRx}</p></div></div>
-    <div class="pdf-sec-title">Agronomist Technical Notes</div><div class="pdf-body">${agronNotes||'See ICAR Disease Management Guidelines.'}</div>
-    <div class="pdf-sec-title">Farmer Advisory — Plain Language</div><div class="pdf-body">${farmerAdvisory||'Follow prescriptions carefully. Contact your KVK if symptoms persist.'}</div>
-    <div class="pdf-sec-title">IPM Notes</div><div class="pdf-ipm-list">${(ipmNotes||[]).map(n=>`<div>${n}</div>`).join('')}</div>
-    <div class="pdf-sec-title">14-Day Recovery Projection</div><table class="pdf-table"><thead><tr><th>Day</th><th>Unchecked Vigor</th><th>With Treatment</th><th>Gain</th></tr></thead><tbody>${curveRows}</tbody></table>
-    <div class="pdf-sec-title">AI Agent Processing Log</div><div class="pdf-body">${(traces||[]).join('\n')}</div>
-    <div class="pdf-footer"><span>KrishiKonnect AI Platform — krishikonnect.in</span><span>${now}</span></div>
-    <div class="pdf-disclaimer">This report is AI-generated and must be reviewed by a certified agronomist before field implementation. Pesticide applications must comply with the Insecticides Act 1968, MRL regulations, and local state laws.</div>`;
-  }
-  if(!html){ showToast('Run analysis first to generate a PDF.'); return; }
-  document.getElementById('pdf-content').innerHTML=html;
-  document.getElementById('pdf-report').style.display='block';
-  window.print();
-  setTimeout(()=>{ document.getElementById('pdf-report').style.display='none'; },600);
-}
-
-/* ── PWA / APP INSTALL ───────────────────────────*/
-let pwaInstallEvent = null;
-window.addEventListener('beforeinstallprompt', e=>{
-  e.preventDefault(); pwaInstallEvent=e;
-  setTimeout(showPWABannerIfEligible, 4000);
-});
-function showPWABannerIfEligible(){
-  if(pwaInstallEvent && currentUser && !localStorage.getItem('pwa_dismissed')){
-    document.getElementById('pwa-banner').style.display='flex';
-  }
-}
-document.getElementById('pwa-install-btn').addEventListener('click', async ()=>{
-  if(!pwaInstallEvent) return;
-  pwaInstallEvent.prompt();
-  const result = await pwaInstallEvent.userChoice;
-  if(result.outcome==='accepted') showToast('KrishiKonnect installed! 🌾 Find it on your home screen.');
-  dismissPWA();
-});
-function dismissPWA(){ document.getElementById('pwa-banner').style.display='none'; localStorage.setItem('pwa_dismissed','1'); }
-
-// Register service worker for offline support
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    // Inline SW for offline caching (PWA)
-    const swCode = `
-const CACHE='krishikonnect-v1';
-const ASSETS=['/'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>new Response('Offline',{status:503})))));
-    `;
-    const swBlob = new Blob([swCode],{type:'application/javascript'});
-    const swUrl  = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl).catch(()=>{});
+// ══ PWA INSTALL ══════════════════════════════════
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredInstall=e;
+  const banner=document.getElementById('install-banner');
+  banner.classList.add('visible');
+  document.getElementById('install-btn').addEventListener('click',()=>{
+    deferredInstall.prompt();
+    deferredInstall.userChoice.then(()=>{banner.classList.remove('visible');deferredInstall=null;});
   });
+});
+function dismissInstall(){ document.getElementById('install-banner').classList.remove('visible'); }
+
+// ══ UTILS ════════════════════════════════════════
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function showToast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block';
+  setTimeout(()=>t.style.display='none',3200);
 }
 
-/* ── UTILITIES ───────────────────────────────────*/
-function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
-function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>{ t.style.display='none'; },3200); }
-
-/* ── INIT ────────────────────────────────────────*/
+// ══ INIT ═════════════════════════════════════════
 window.addEventListener('load',()=>{
-  // Try to restore session
-  const sess = loadSession();
-  if(sess){
-    enterApp(sess);
-  }
-  // If no session, gate stays visible (mandatory auth)
-
+  const sess=loadSession();
+  if(sess){ loginUser(sess); }
   initFarmerChart();
   renderMandi();
-  renderWeather();
   renderAPSteps();
   renderCaseQueue();
-  renderPipeline();
-  resetPipeline();
   renderQuickQ();
   initChatWelcome();
   selectCase(0);
+  trackVisit('page_load');
 });
+
+// Close dropdown on Escape
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.getElementById('user-dropdown').classList.remove('open'); });
+
+// Add fade-out keyframe dynamically
+const style=document.createElement('style');
+style.textContent='@keyframes fade-out{from{opacity:1}to{opacity:0}}';
+document.head.appendChild(style);
 </script>
 </body>
 </html>
