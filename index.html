@@ -24,8 +24,8 @@
 <!-- Print-only styles inline (critical) -->
 <style>
 @media print {
-  @page { margin: 12mm 14mm; size: A4 portrait; }
-  html, body { height: auto !important; overflow: visible !important; background: white !important; }
+  @page { size: A4 portrait; margin: 11mm 13mm; }
+  html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
   body * { visibility: hidden !important; }
   #pdf-report, #pdf-report * { visibility: visible !important; }
   #pdf-report {
@@ -33,22 +33,23 @@
     position: static !important;
     width: 100% !important;
     height: auto !important;
+    max-height: none !important;
     overflow: visible !important;
-    background: white !important;
-    z-index: 99999 !important;
+    background: #fff !important;
     padding: 0 !important;
     margin: 0 !important;
+    box-shadow: none !important;
   }
   .pdf-wrap { width: 100% !important; overflow: visible !important; }
-  .pdf-header, .pdf-meta-row, .pdf-two { page-break-inside: avoid; }
-  .pdf-table { page-break-inside: avoid; }
+  .pdf-header, .pdf-meta-row, .pdf-two, .pdf-table { page-break-inside: avoid; }
+  #pdf-report::after { display: none !important; content: none !important; }
 }
-/* Global overflow guard — prevents any child from widening the viewport */
+/* Global overflow guard */
 .panel, .card, .upload-zone, .scan-wrapper, .upload-preview, #drop-zone {
   max-width: 100%;
   box-sizing: border-box;
 }
-.upload-preview { width: 100%; height: auto; display: block; object-fit: contain; }
+.upload-preview { width: 100%; max-height: 240px; height: auto; display: block; object-fit: cover; }
 .scan-wrapper { overflow: hidden; }
 </style>
 </head>
@@ -472,7 +473,7 @@
           </div>
           <div id="upload-preview-wrap" style="display:none;max-width:100%;overflow:hidden">
             <div class="scan-wrapper" id="scan-wrapper" style="max-width:100%;overflow:hidden">
-              <img id="upload-preview" class="upload-preview" src="" alt="preview" style="max-width:100%;height:auto;display:block">
+              <img id="upload-preview" class="upload-preview" src="" alt="preview" style="max-width:100%;max-height:240px;width:100%;height:auto;display:block;object-fit:cover;object-position:center">
               <div class="scan-line" id="scan-line" style="display:none"></div>
             </div>
             <div class="scan-chips" id="scan-chips"></div>
@@ -1079,11 +1080,10 @@ function downloadReportFile(){
   if(!lastTriageData){showToast('Generate a report first.');return;}
   const{crop,stage,region,symptoms,pathName,sev,aiText}=lastTriageData;
   const now=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-  const reportId='TRG-'+Date.now().toString().slice(-6);
   const content=`KRISHIKONNECT — FARM ADVISORY REPORT
 ============================================
-Report ID   : ${reportId}
 Date        : ${now}
+Farmer      : ${currentUser?.name||'Farmer'}
 Crop        : ${crop}
 Growth Stage: ${stage}
 Region      : ${region}
@@ -1125,8 +1125,7 @@ function generatePDF(type){
       const g=((curves.recovery[t]-curves.decay[t])*100).toFixed(1);
       rows+=`<tr><td>Day ${t}</td><td>${(curves.decay[t]*100).toFixed(1)}%</td><td>${(curves.recovery[t]*100).toFixed(1)}%</td><td>+${g}%</td></tr>`;
     }
-    const triageId='TRG-'+Date.now().toString().slice(-6);
-    html=`<div class="pdf-header"><div><div class="pdf-logo">Krishi<span>Konnect</span></div><div style="font-size:11px;color:#555;margin-top:2px">AI Crop Intelligence Platform</div></div><div class="pdf-meta-small">Report ID: ${triageId}<br>Date: ${now}<br>Platform: KrishiKonnect v2.1</div></div>
+    html=`<div class="pdf-header"><div><div class="pdf-logo">Krishi<span>Konnect</span></div><div style="font-size:11px;color:#555;margin-top:2px">AI Crop Intelligence Platform</div></div><div class="pdf-meta-small">Report ID: TRG-${Date.now().toString().slice(-6)}<br>Date: ${now}<br>Prepared for: ${currentUser?.name||'Farmer'}</div></div>
     <div class="pdf-title">Farm Advisory Report</div><div class="pdf-sub">${crop} — ${stage} — ${region}</div>
     <div class="pdf-meta-row"><div class="pdf-mi"><strong>Crop</strong><span>${crop}</span></div><div class="pdf-mi"><strong>Stage</strong><span>${stage}</span></div><div class="pdf-mi"><strong>Region</strong><span>${region}</span></div><div class="pdf-mi"><strong>Code</strong><span>${code}</span></div><div class="pdf-mi"><strong>Risk</strong><span>${sev}</span></div></div>
     <div class="pdf-sec-title">Symptoms Reported</div><div class="pdf-body">${symptoms}</div>
@@ -1136,96 +1135,69 @@ function generatePDF(type){
     <div class="pdf-disclaimer">AI-generated advisory. Consult your local KVK or ICAR agronomist for critical decisions. Pesticide use must comply with Insecticides Act 1968.</div>`;
   } else if(type==='deep'&&lastDiagData){
     const{crop,stage,region,area,pathogen,confidence,severity,chemRx,bioRx,aiAnalysis,farmerAdv,agronNotes,ipmNotes,curves}=lastDiagData;
-    // Compact table — only days 0,2,4,7,10,14 (6 rows fits on one page)
+    // Helper: truncate text to n chars cleanly
+    const trim=(s,n)=>{if(!s)return'—';s=s.replace(/\n+/g,' ').trim();return s.length>n?s.slice(0,n).trimEnd()+'…':s;};
+    // 6 key days only (rows fit in ~65px height at font-size 10px)
     const keyDays=[0,2,4,7,10,14];
     let rows='';
     keyDays.forEach(t=>{
-      const dv=curves.decay[t]||0, rv=curves.recovery[t]||0;
-      const g=((rv-dv)*100).toFixed(1);
-      rows+=`<tr><td>Day ${t}</td><td>${(dv*100).toFixed(1)}%</td><td>${(rv*100).toFixed(1)}%</td><td style="color:#2b5c12;font-weight:700">+${g}%</td></tr>`;
+      const d=curves.decay[t]||0,r=curves.recovery[t]||0;
+      const g=((r-d)*100).toFixed(1);
+      rows+=`<tr><td>Day ${t}</td><td>${(d*100).toFixed(1)}%</td><td>${(r*100).toFixed(1)}%</td><td style="color:#2b5c12;font-weight:700">+${g}%</td></tr>`;
     });
-    const ipmList=(ipmNotes||[]).map((n,i)=>`<div style="padding:3px 0;border-bottom:1px solid #eef2ec;font-size:11px">${i+1}. ${n}</div>`).join('')||'<div style="font-size:11px">Follow standard ICAR IPM protocol.</div>';
-    const caseId='DX-'+Date.now().toString().slice(-6);
+    // IPM — first 3 points only, inline
+    const ipmLine=(ipmNotes||[]).slice(0,3).map((n,i)=>`${i+1}. ${n}`).join('  ·  ');
     html=`<div class="pdf-wrap">
-    <div class="pdf-header">
-      <div>
-        <div class="pdf-logo">Krishi<span>Konnect</span></div>
-        <div style="font-size:10px;color:#555;margin-top:2px;font-family:sans-serif">Agronomist Deep Diagnosis Report</div>
-      </div>
-      <div class="pdf-meta-small">
-        Case ID: ${caseId}<br>
-        Date: ${now}<br>
-        Agronomist: ${currentUser?.name||'Field Agronomist'}
-      </div>
-    </div>
-
-    <div class="pdf-title" style="font-size:18px;margin-bottom:2px">Deep Pathological Diagnosis</div>
-    <div class="pdf-sub" style="font-size:12px;margin-bottom:10px">${crop} · ${stage} · ${region} · ${area} acres</div>
-
-    <div class="pdf-meta-row" style="padding:8px 12px;margin-bottom:10px;gap:14px">
-      <div class="pdf-mi"><strong>Pathogen</strong><span style="font-size:12px;font-style:italic">${pathogen}</span></div>
-      <div class="pdf-mi"><strong>Confidence</strong><span style="font-size:12px">${(confidence*100).toFixed(1)}%</span></div>
-      <div class="pdf-mi"><strong>Severity</strong><span style="font-size:12px;font-weight:700;color:${severity==='HIGH'?'#c0392b':severity==='MEDIUM'?'#d68910':'#1e8449'}">${severity}</span></div>
-      <div class="pdf-mi"><strong>Field Area</strong><span style="font-size:12px">${area} ac</span></div>
-      <div class="pdf-mi"><strong>Growth Stage</strong><span style="font-size:12px">${stage}</span></div>
-      <div class="pdf-mi"><strong>Region</strong><span style="font-size:12px">${region}</span></div>
-    </div>
-
-    <div class="pdf-two" style="gap:8px;margin-bottom:10px">
-      <div class="pdf-box" style="padding:10px 12px">
-        <div class="pdf-box-title">⚗ Chemical Prescription</div>
-        <p style="font-size:11px;line-height:1.6;color:#333;margin:0">${chemRx||'Consult ICAR guidelines for appropriate chemical treatment.'}</p>
-      </div>
-      <div class="pdf-box" style="padding:10px 12px">
-        <div class="pdf-box-title">🌿 Biological / Organic Prescription</div>
-        <p style="font-size:11px;line-height:1.6;color:#333;margin:0">${bioRx||'Trichoderma viride at 100g per plant. Pseudomonas fluorescens at 10ml per liter.'}</p>
-      </div>
-    </div>
-
-    <div class="pdf-sec-title" style="margin-top:10px">AI Pathological Assessment</div>
-    <div class="pdf-body" style="font-size:11px;line-height:1.6">${aiAnalysis||'—'}</div>
-
-    <div class="pdf-sec-title" style="margin-top:10px">Farmer Advisory (Plain Language)</div>
-    <div class="pdf-body" style="font-size:11px;line-height:1.6">${farmerAdv||'Follow prescriptions as directed. Contact your local KVK if there is no improvement within 7 days.'}</div>
-
-    <div class="pdf-sec-title" style="margin-top:10px">Agronomist Technical Notes</div>
-    <div class="pdf-body" style="font-size:11px;line-height:1.6;color:#333">${agronNotes||'PHI as per label. Resistance risk: low to moderate. MRL compliance required per FSSAI.'}</div>
-
-    <div class="pdf-sec-title" style="margin-top:10px">IPM Notes</div>
-    <div class="pdf-body" style="padding:6px 10px">${ipmList}</div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;align-items:start">
-      <div>
-        <div class="pdf-sec-title" style="margin-top:0">14-Day Recovery Projection</div>
-        <table class="pdf-table" style="font-size:10.5px">
-          <thead><tr><th>Day</th><th>Untreated</th><th>With Treatment</th><th>Gain</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-      <div>
-        <div class="pdf-sec-title" style="margin-top:0">Decay &amp; Recovery Parameters</div>
-        <div class="pdf-body" style="font-size:11px;line-height:1.8;color:#333">
-          <strong>Disease decay rate (d):</strong> ${lastDiagData.d?.toFixed(3)||'—'}<br>
-          <strong>Recovery coefficient (k):</strong> ${lastDiagData.k?.toFixed(3)||'—'}<br>
-          <strong>Initial vigor:</strong> 75.0%<br>
-          <strong>Projected recovery (Day 14):</strong> ${((curves.recovery[14]||0)*100).toFixed(1)}%<br>
-          <strong>Untreated loss (Day 14):</strong> ${((curves.decay[14]||0)*100).toFixed(1)}%<br>
-          <strong>Net gain from treatment:</strong> ${(((curves.recovery[14]||0)-(curves.decay[14]||0))*100).toFixed(1)}%
-        </div>
-      </div>
-    </div>
-
-    <div class="pdf-footer" style="margin-top:14px;padding-top:8px">
-      <span>KrishiKonnect AI Platform · Case ${caseId}</span>
-      <span>${now}</span>
-    </div>
-    <div class="pdf-disclaimer">AI-generated diagnosis for informational purposes only. Must be reviewed by a certified agronomist before field implementation. Pesticide use must comply with the Insecticides Act 1968 and applicable state regulations. MRL compliance is mandatory as per FSSAI standards.</div>
-    </div>`;
+<div class="pdf-header">
+  <div><div class="pdf-logo">Krishi<span>Konnect</span></div><div style="font-size:10px;color:#555;margin-top:1px;font-family:sans-serif">Agronomist Deep Diagnosis Report</div></div>
+  <div class="pdf-meta-small">Case ID: DX-${Date.now().toString().slice(-6)}<br>Date: ${now}<br>Agronomist: ${currentUser?.name||'Field Agronomist'}</div>
+</div>
+<div class="pdf-title">Deep Pathological Diagnosis</div>
+<div class="pdf-sub">${crop} · ${stage} · ${region} · ${area} acres</div>
+<div class="pdf-meta-row">
+  <div class="pdf-mi"><strong>Pathogen</strong><span>${pathogen}</span></div>
+  <div class="pdf-mi"><strong>Confidence</strong><span>${(confidence*100).toFixed(0)}%</span></div>
+  <div class="pdf-mi"><strong>Severity</strong><span>${severity}</span></div>
+  <div class="pdf-mi"><strong>Area</strong><span>${area} ac</span></div>
+</div>
+<div class="pdf-two">
+  <div class="pdf-box"><div class="pdf-box-title">⚗ Chemical Rx</div><p style="font-size:10px;line-height:1.5;margin:0">${trim(chemRx,200)}</p></div>
+  <div class="pdf-box"><div class="pdf-box-title">🌿 Biological Rx</div><p style="font-size:10px;line-height:1.5;margin:0">${trim(bioRx,200)}</p></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+  <div>
+    <div class="pdf-sec-title">Pathological Assessment</div>
+    <div class="pdf-body">${trim(aiAnalysis,380)}</div>
+    <div class="pdf-sec-title" style="margin-top:6px">Farmer Advisory</div>
+    <div class="pdf-body">${trim(farmerAdv||'Follow prescriptions as directed. Contact KVK if no improvement in 7 days.',240)}</div>
+    <div class="pdf-sec-title" style="margin-top:6px">IPM Notes</div>
+    <div class="pdf-body">${ipmLine||'Follow standard ICAR IPM protocol.'}</div>
+  </div>
+  <div>
+    <div class="pdf-sec-title">Recovery Projection</div>
+    <table class="pdf-table"><thead><tr><th>Day</th><th>Untreated</th><th>Treated</th><th>Gain</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="pdf-sec-title" style="margin-top:6px">Technical Notes</div>
+    <div class="pdf-body">${trim(agronNotes||'See ICAR disease management protocol.',280)}</div>
+  </div>
+</div>
+<div class="pdf-footer"><span>KrishiKonnect AI · kishi-konnect-app.vercel.app</span><span>${now}</span></div>
+<div class="pdf-disclaimer">AI-generated for informational purposes. Must be reviewed by a certified agronomist before field implementation. Pesticide use must comply with Insecticides Act 1968.</div>
+</div>`;
+  }
   }
   document.getElementById('pdf-content').innerHTML=html;
   document.getElementById('pdf-report').style.display='block';
-  window.print();
-  setTimeout(()=>{document.getElementById('pdf-report').style.display='none';},600);
+  // Wait one frame so the browser fully renders the content before printing
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const hide=()=>{
+        document.getElementById('pdf-report').style.display='none';
+        window.removeEventListener('afterprint',hide);
+      };
+      window.addEventListener('afterprint',hide);
+      window.print();
+    });
+  });
 }
 
 // ══ AGRONOMIST CASES ════════════════════════════
@@ -1295,45 +1267,27 @@ function addNewCase(){
   document.getElementById('upload-prompt').style.display='block';
 }
 
-function compressImage(file, maxPx=800, quality=0.82){
-  return new Promise((resolve)=>{
-    const reader=new FileReader();
-    reader.onload=(ev)=>{
-      const img=new Image();
-      img.onload=()=>{
-        let w=img.width, h=img.height;
-        if(w>maxPx||h>maxPx){
-          if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
-          else{w=Math.round(w*maxPx/h);h=maxPx;}
-        }
-        const canvas=document.createElement('canvas');
-        canvas.width=w; canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        resolve(canvas.toDataURL('image/jpeg',quality));
-      };
-      img.src=ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
 function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
 function handleDragLeave(){document.getElementById('drop-zone').classList.remove('drag-over');}
 function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)processImageFile(f);}
 function handleFileSelect(e){const f=e.target.files[0];if(f)processImageFile(f);}
-async function processImageFile(file){
+function processImageFile(file){
   if(!file.type.startsWith('image/')){showToast('Please upload an image file.');return;}
-  showToast('Compressing image…');
-  const url=await compressImage(file,800,0.82);
-  document.getElementById('upload-preview').src=url;
-  document.getElementById('upload-preview-wrap').style.display='block';
-  document.getElementById('upload-prompt').style.display='none';
-  document.getElementById('drop-zone').classList.add('has-image');
-  document.getElementById('scan-badge').style.display='block';
-  if(activeCaseIdx<CASES.length){CASES[activeCaseIdx].thumb=url;renderCaseQueue();}
-  const sl=document.getElementById('scan-line'); sl.style.display='block';
-  setTimeout(()=>{sl.style.display='none';document.getElementById('scan-chips').innerHTML=
-    `<span class="chip chip-red">Lesion detected</span><span class="chip chip-amber">Chlorosis markers</span><span class="chip chip-blue">Tissue ready</span><span class="chip chip-green">Quality: Good</span>`;},2200);
-  await runImageAnalysis(url);
+  const reader=new FileReader();
+  reader.onload=async(ev)=>{
+    const url=ev.target.result;
+    document.getElementById('upload-preview').src=url;
+    document.getElementById('upload-preview-wrap').style.display='block';
+    document.getElementById('upload-prompt').style.display='none';
+    document.getElementById('drop-zone').classList.add('has-image');
+    document.getElementById('scan-badge').style.display='block';
+    if(activeCaseIdx<CASES.length){CASES[activeCaseIdx].thumb=url;renderCaseQueue();}
+    const sl=document.getElementById('scan-line'); sl.style.display='block';
+    setTimeout(()=>{sl.style.display='none';document.getElementById('scan-chips').innerHTML=
+      `<span class="chip chip-red">Lesion detected</span><span class="chip chip-amber">Chlorosis markers</span><span class="chip chip-blue">Tissue ready</span><span class="chip chip-green">Quality: Good</span>`;},2200);
+    await runImageAnalysis(url);
+  };
+  reader.readAsDataURL(file);
 }
 async function runImageAnalysis(dataUrl){
   document.getElementById('img-scan-result').style.display='block';
