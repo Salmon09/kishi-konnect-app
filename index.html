@@ -39,10 +39,19 @@
     padding: 0 !important;
     margin: 0 !important;
     box-shadow: none !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
-  .pdf-wrap { width: 100% !important; overflow: visible !important; }
-  .pdf-header, .pdf-meta-row, .pdf-two, .pdf-table { page-break-inside: avoid; }
+  .pdf-wrap {
+    width: 100% !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  .pdf-header, .pdf-meta-row, .pdf-two, .pdf-table { page-break-inside: avoid; break-inside: avoid; }
+  .pdf-footer, .pdf-disclaimer { page-break-after: avoid !important; break-after: avoid !important; }
   #pdf-report::after { display: none !important; content: none !important; }
+  body::after { display: none !important; content: none !important; }
 }
 /* Global overflow guard */
 .panel, .card, .upload-zone, .scan-wrapper, .upload-preview, #drop-zone {
@@ -637,24 +646,32 @@
   </div>
 
   <div class="col-7-5">
-    <!-- Chat -->
-    <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
-      <div style="padding:13px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px">
-        <div class="card-icon">💬</div>
-        <div><div class="card-title">KrishiAI Chat</div><div class="card-desc">English, Hindi, Punjabi, Telugu, Marathi — any language</div></div>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="clearChat()">Clear</button>
+    <!-- Chat + Quick Questions (left column) -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+        <div style="padding:13px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px">
+          <div class="card-icon">💬</div>
+          <div><div class="card-title">KrishiAI Chat</div><div class="card-desc">English, Hindi, Punjabi, Telugu, Marathi — any language</div></div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="clearChat()">Clear</button>
+        </div>
+        <div id="chat-messages"></div>
+        <div class="llm-bar">
+          <span class="llm-label">AI Engine:</span>
+          <span class="llm-chip active" id="llm-claude" style="cursor:default">Claude</span>
+          <span class="llm-chip" id="llm-gemini" title="Gemini requires a backend API key — not available" style="opacity:0.35;cursor:not-allowed;pointer-events:none">Gemini</span>
+          <span class="llm-chip" id="llm-openai" title="GPT-4o requires a backend API key — not available" style="opacity:0.35;cursor:not-allowed;pointer-events:none">GPT-4o</span>
+          <span style="margin-left:auto;font-size:10px;color:var(--leaf);font-family:'JetBrains Mono',monospace" id="active-llm-label">✓ Claude (Anthropic)</span>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Ask about diseases, schemes, prices, soil health..." onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+        </div>
       </div>
-      <div id="chat-messages"></div>
-      <div class="llm-bar">
-        <span class="llm-label">AI Engine:</span>
-        <span class="llm-chip active" id="llm-claude" style="cursor:default">Claude</span>
-        <span class="llm-chip" id="llm-gemini" title="Gemini requires a backend API key — not available" style="opacity:0.35;cursor:not-allowed;pointer-events:none">Gemini</span>
-        <span class="llm-chip" id="llm-openai" title="GPT-4o requires a backend API key — not available" style="opacity:0.35;cursor:not-allowed;pointer-events:none">GPT-4o</span>
-        <span style="margin-left:auto;font-size:10px;color:var(--leaf);font-family:'JetBrains Mono',monospace" id="active-llm-label">✓ Claude (Anthropic)</span>
-      </div>
-      <div class="chat-input-row">
-        <input type="text" id="chat-input" placeholder="Ask about diseases, schemes, prices, soil health..." onkeydown="if(event.key==='Enter')sendChat()">
-        <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+
+      <!-- Quick Questions — below chat box -->
+      <div class="card">
+        <div class="card-header"><div class="card-icon">⚡</div><div><div class="card-title">Quick Questions</div><div class="card-desc">Tap to ask instantly</div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px" id="quick-q-list"></div>
       </div>
     </div>
 
@@ -678,12 +695,6 @@
           <div class="kb-topic" onclick="askTopic('harvest')"><span class="kb-topic-icon">🌾</span> Harvest Guide</div>
           <div class="kb-topic" onclick="askTopic('storage')"><span class="kb-topic-icon">🏚️</span> Post-Harvest Storage</div>
         </div>
-      </div>
-
-      <!-- Quick Questions -->
-      <div class="card">
-        <div class="card-header"><div class="card-icon">⚡</div><div><div class="card-title">Quick Questions</div><div class="card-desc">Tap to ask instantly</div></div></div>
-        <div style="display:flex;flex-direction:column;gap:6px" id="quick-q-list"></div>
       </div>
 
       <!-- Knowledge base coverage -->
@@ -1147,7 +1158,7 @@ function generatePDF(type){
     });
     // IPM — first 3 points only, inline
     const ipmLine=(ipmNotes||[]).slice(0,3).map((n,i)=>`${i+1}. ${n}`).join('  ·  ');
-    html=`<div class="pdf-wrap">
+    html=`<div class="pdf-wrap" style="page-break-after:avoid;break-after:avoid">
 <div class="pdf-header">
   <div><div class="pdf-logo">Krishi<span>Konnect</span></div><div style="font-size:10px;color:#555;margin-top:1px;font-family:sans-serif">Agronomist Deep Diagnosis Report</div></div>
   <div class="pdf-meta-small">Case ID: DX-${Date.now().toString().slice(-6)}<br>Date: ${now}<br>Agronomist: ${currentUser?.name||'Field Agronomist'}</div>
@@ -1181,7 +1192,7 @@ function generatePDF(type){
   </div>
 </div>
 <div class="pdf-footer"><span>KrishiKonnect AI · kishi-konnect-app.vercel.app</span><span>${now}</span></div>
-<div class="pdf-disclaimer">AI-generated for informational purposes. Must be reviewed by a certified agronomist before field implementation. Pesticide use must comply with Insecticides Act 1968.</div>
+<div class="pdf-disclaimer" style="page-break-after:avoid;break-after:avoid">AI-generated for informational purposes. Must be reviewed by a certified agronomist before field implementation. Pesticide use must comply with Insecticides Act 1968.</div>
 </div>`;
   }
   }
