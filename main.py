@@ -660,8 +660,8 @@ async def chat(req: ChatRequest, user=Depends(get_current_user)):
 @app.post("/api/image/analyze")
 async def analyze_image(file: UploadFile = File(...), user=Depends(get_current_user)):
     content = await file.read()
-    if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")
+    if len(content) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Image too large. Max 2MB (frontend compresses to 800px before upload).")
 
     b64 = base64.b64encode(content).decode("utf-8")
     mime = file.content_type or "image/jpeg"
@@ -708,7 +708,7 @@ async def generate_pdf_report(req: PDFReportRequest, user=Depends(get_current_us
 
         return {
             "report_type": "triage",
-            "generated_by": user_name,
+            "generated_by": "KrishiKonnect AI Platform",   # no personal name in farmer triage reports
             "generated_at": now_str,
             "crop": data.get("crop_type"),
             "stage": data.get("crop_stage"),
@@ -731,7 +731,7 @@ async def generate_pdf_report(req: PDFReportRequest, user=Depends(get_current_us
         data = req.diag_data
         return {
             "report_type": "deep_diagnosis",
-            "generated_by": user_name,
+            "generated_by": user_name,   # agronomist name intentionally kept for deep diagnosis
             "generated_at": now_str,
             "crop": data.get("crop"),
             "stage": data.get("stage"),
